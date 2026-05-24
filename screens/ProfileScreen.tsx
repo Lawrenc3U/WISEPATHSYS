@@ -12,7 +12,8 @@ import {
 import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
 import { useUserStore } from '../stores/userStore';
 import { useAuthStore } from '../stores/authStore';
-import { logoutUser, saveUserProfile } from '../services/authService';
+import { performSignOut, saveUserProfile } from '../services/authService';
+import { confirmAction } from '../utils/confirm';
 import {
   deleteAssessmentResult,
   deleteAllUserAssessments,
@@ -207,19 +208,13 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   };
 
   const handleLogout = () => {
-    Alert.alert('Sign out', 'Are you sure?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Sign out',
-        style: 'destructive',
-        onPress: async () => {
-          await logoutUser();
-          logout();
-          resetUserSession();
-          navigation.replace('Login');
-        },
-      },
-    ]);
+    confirmAction(
+      'Sign out',
+      'Are you sure you want to sign out?',
+      'Sign out',
+      () => performSignOut(logout, resetUserSession),
+      { destructive: true }
+    );
   };
 
   const findStoreIndex = (result: QuizResult) =>
@@ -254,25 +249,17 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
               <Text style={styles.cardTitle}>Your Learning Profile</Text>
             </View>
             <View style={styles.profileItem}>
-              <Text style={styles.profileLabel}>Learning Goals</Text>
+              <Text style={styles.profileLabel}>Senior High Strand</Text>
               <Text style={styles.profileValue}>
-                {userProfile.learningGoals}
+                {userProfile.seniorHighStrand || 'Not set'}
               </Text>
             </View>
             <View style={styles.divider} />
             <View style={styles.profileItem}>
-              <Text style={styles.profileLabel}>Current Level</Text>
-              <Text style={styles.profileValue}>{userProfile.currentSkills}</Text>
-            </View>
-            <View style={styles.divider} />
-            <View style={styles.profileItem}>
-              <Text style={styles.profileLabel}>Learning Style</Text>
-              <Text style={styles.profileValue}>{userProfile.learningStyle}</Text>
-            </View>
-            <View style={styles.divider} />
-            <View style={styles.profileItem}>
-              <Text style={styles.profileLabel}>Time Commitment</Text>
-              <Text style={styles.profileValue}>{userProfile.experience}</Text>
+              <Text style={styles.profileLabel}>Learning Goals</Text>
+              <Text style={styles.profileValue}>
+                {userProfile.learningGoals}
+              </Text>
             </View>
           </View>
         )}

@@ -68,10 +68,8 @@ export interface StudentProgress {
 export interface UserProfile {
   name: string;
   email?: string;
+  seniorHighStrand: string;
   learningGoals: string;
-  currentSkills: string;
-  learningStyle: string;
-  experience: string;
   selectedPath?: Recommendation;
   quizHistory?: QuizResult[];
   progress?: StudentProgress;

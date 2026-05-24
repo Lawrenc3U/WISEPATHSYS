@@ -30,14 +30,14 @@ import { loadQuizQuestionsFromFirebase } from '../services/adminService';
 import {
   subscribeToAuthChanges,
   fetchUserAccount,
+  isAuthSignOutInProgress,
 } from '../services/authService';
 import { loadUserAssessments } from '../services/userDataService';
 import { loadAllCourseProgress } from '../services/progressService';
 import { useCourseStore } from '../stores/courseStore';
 import { useAuthStore } from '../stores/authStore';
 import { useUserStore } from '../stores/userStore';
-
-const Stack = createNativeStackNavigator<RootStackParamList>();
+import { UserAccount } from '../utils/types';
 
 const screenOptions = {
   headerStyle: { backgroundColor: colors.background },
@@ -46,6 +46,101 @@ const screenOptions = {
   headerShadowVisible: false,
   contentStyle: { backgroundColor: colors.background },
 };
+
+const AuthStack = createNativeStackNavigator<Pick<RootStackParamList, 'Login' | 'Register'>>();
+type AppStackParamList = Omit<RootStackParamList, 'Login' | 'Register'>;
+const AppStack = createNativeStackNavigator<AppStackParamList>();
+
+const AuthNavigator = () => (
+  <AuthStack.Navigator screenOptions={screenOptions} initialRouteName="Login">
+    <AuthStack.Screen
+      name="Login"
+      component={LoginScreen}
+      options={{ headerShown: false }}
+    />
+    <AuthStack.Screen
+      name="Register"
+      component={RegisterScreen}
+      options={{ title: 'Create Account' }}
+    />
+  </AuthStack.Navigator>
+);
+
+const getAppInitialRoute = (
+  account: UserAccount
+): keyof AppStackParamList => {
+  if (account.role === 'admin') return 'AdminDashboard';
+  if (!account.profileComplete) return 'ProfileSetup';
+  return 'Dashboard';
+};
+
+const AppNavigator = ({ account }: { account: UserAccount }) => (
+  <AppStack.Navigator
+    screenOptions={screenOptions}
+    initialRouteName={getAppInitialRoute(account)}
+  >
+    <AppStack.Screen
+      name="ProfileSetup"
+      component={ProfileSetupScreen}
+      options={{ title: 'Your Profile', headerBackVisible: false }}
+    />
+    <AppStack.Screen
+      name="Start"
+      component={StartScreen}
+      options={{ headerShown: false }}
+    />
+    <AppStack.Screen
+      name="Dashboard"
+      component={DashboardScreen}
+      options={{ headerShown: false }}
+    />
+    <AppStack.Screen
+      name="AssessmentQuiz"
+      component={AssessmentQuizScreen}
+      options={{ headerTitle: 'Assessment Quiz' }}
+    />
+    <AppStack.Screen
+      name="Recommendations"
+      component={RecommendationsScreen}
+      options={{ headerTitle: 'Recommendations' }}
+    />
+    <AppStack.Screen
+      name="CourseDetail"
+      component={CourseDetailScreen}
+      options={{ headerTitle: 'Course Details' }}
+    />
+    <AppStack.Screen
+      name="Progress"
+      component={ProgressTrackingScreen}
+      options={{ headerTitle: 'Academic Progress' }}
+    />
+    <AppStack.Screen
+      name="Profile"
+      component={ProfileScreen}
+      options={{ headerTitle: 'Your Profile' }}
+    />
+    <AppStack.Screen
+      name="AdminDashboard"
+      component={AdminDashboardScreen}
+      options={{ headerShown: false }}
+    />
+    <AppStack.Screen
+      name="AdminCourses"
+      component={AdminCoursesScreen}
+      options={{ headerTitle: 'Course Management' }}
+    />
+    <AppStack.Screen
+      name="AdminAssessments"
+      component={AdminAssessmentsScreen}
+      options={{ headerTitle: 'Assessment Management' }}
+    />
+    <AppStack.Screen
+      name="AdminData"
+      component={AdminDataScreen}
+      options={{ headerTitle: 'Data & Recommendations' }}
+    />
+  </AppStack.Navigator>
+);
 
 const RootNavigator: React.FC = () => {
   const [isReady, setIsReady] = useState(false);
@@ -56,6 +151,7 @@ const RootNavigator: React.FC = () => {
   const account = useAuthStore((state) => state.account);
   const isLoading = useAuthStore((state) => state.isLoading);
   const hydrateFromAccount = useUserStore((state) => state.hydrateFromAccount);
+  const resetUserSession = useUserStore((state) => state.resetUserSession);
   const setProgressByCourse = useUserStore((state) => state.setProgressByCourse);
 
   useEffect(() => {
@@ -90,21 +186,35 @@ const RootNavigator: React.FC = () => {
       return;
     }
 
+    let active = true;
+
     const unsubscribe = subscribeToAuthChanges(async (user) => {
+      if (!active) return;
+
       if (!user) {
         setAccount(null);
+        resetUserSession();
+        setLoading(false);
+        return;
+      }
+
+      if (isAuthSignOutInProgress()) {
         setLoading(false);
         return;
       }
 
       try {
         const userAccount = await fetchUserAccount(user.uid);
+        if (!active || isAuthSignOutInProgress()) return;
+
         if (userAccount) {
           setAccount(userAccount);
           const progressMap = await loadAllCourseProgress(user.uid);
+          if (!active || isAuthSignOutInProgress()) return;
           setProgressByCourse(progressMap);
           if (userAccount.profile) {
             const history = await loadUserAssessments(user.uid);
+            if (!active || isAuthSignOutInProgress()) return;
             hydrateFromAccount(userAccount.profile, history);
           }
         } else {
@@ -116,105 +226,29 @@ const RootNavigator: React.FC = () => {
           });
         }
       } catch {
-        setAccount(null);
+        if (active && !isAuthSignOutInProgress()) {
+          setAccount(null);
+        }
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     });
 
-    return unsubscribe;
-  }, [setAccount, setLoading, hydrateFromAccount]);
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, [setAccount, setLoading, hydrateFromAccount, resetUserSession, setProgressByCourse]);
 
   if (!isReady || isLoading) {
     return <LoadingSpinner message="Initializing WisePath..." />;
   }
 
-  const getInitialRoute = (): keyof RootStackParamList => {
-    if (!account) return 'Login';
-    if (account.role === 'admin') return 'AdminDashboard';
-    if (!account.profileComplete) return 'ProfileSetup';
-    return 'Dashboard';
-  };
+  const navKey = account ? `signed-in-${account.uid}` : 'signed-out';
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={screenOptions}
-        initialRouteName={getInitialRoute()}
-      >
-        <Stack.Screen
-          name="Login"
-          component={LoginScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Register"
-          component={RegisterScreen}
-          options={{ title: 'Create Account' }}
-        />
-        <Stack.Screen
-          name="ProfileSetup"
-          component={ProfileSetupScreen}
-          options={{ title: 'Your Profile', headerBackVisible: false }}
-        />
-
-        <Stack.Screen
-          name="Start"
-          component={StartScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Dashboard"
-          component={DashboardScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="AssessmentQuiz"
-          component={AssessmentQuizScreen}
-          options={{ headerTitle: 'Assessment Quiz' }}
-        />
-        <Stack.Screen
-          name="Recommendations"
-          component={RecommendationsScreen}
-          options={{ headerTitle: 'Recommendations' }}
-        />
-        <Stack.Screen
-          name="CourseDetail"
-          component={CourseDetailScreen}
-          options={{ headerTitle: 'Course Details' }}
-        />
-        <Stack.Screen
-          name="Progress"
-          component={ProgressTrackingScreen}
-          options={{ headerTitle: 'Academic Progress' }}
-        />
-        <Stack.Screen
-          name="Profile"
-          component={ProfileScreen}
-          options={{ headerTitle: 'Your Profile' }}
-        />
-
-        <Stack.Screen
-          name="AdminDashboard"
-          component={AdminDashboardScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="AdminCourses"
-          component={AdminCoursesScreen}
-          options={{ headerTitle: 'Course Management' }}
-        />
-        <Stack.Screen
-          name="AdminAssessments"
-          component={AdminAssessmentsScreen}
-          options={{ headerTitle: 'Assessment Management' }}
-        />
-        <Stack.Screen
-          name="AdminData"
-          component={AdminDataScreen}
-          options={{ headerTitle: 'Data & Recommendations' }}
-        />
-      </Stack.Navigator>
+    <NavigationContainer key={navKey}>
+      {account ? <AppNavigator account={account} /> : <AuthNavigator />}
     </NavigationContainer>
   );
 };

@@ -4,6 +4,19 @@ import { QuizQuestion, Course } from './types';
 export const ADMIN_REGISTRATION_CODE =
   process.env.EXPO_PUBLIC_ADMIN_CODE || 'wisepath-admin-2026';
 
+/** Philippine senior high school tracks / strands (K-12) */
+export const SENIOR_HIGH_STRANDS = [
+  'STEM',
+  'ABM',
+  'HUMSS',
+  'GAS',
+  'TVL – ICT',
+  'TVL – Home Economics',
+  'TVL – Industrial Arts',
+  'TVL – Agri-Fishery Arts',
+  'Other / Undecided',
+] as const;
+
 /**
  * ============================================
  * WISEPATH - LIMITED TO 3 CORE COURSES ONLY

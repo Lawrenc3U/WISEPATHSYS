@@ -129,6 +129,28 @@ export const logoutUser = async (): Promise<void> => {
   }
 };
 
+let signOutInProgress = false;
+
+/** Ignore auth listener re-hydrate while Firebase sign-out is finishing (web race fix). */
+export const isAuthSignOutInProgress = (): boolean => signOutInProgress;
+
+/** Sign out of Firebase and clear local session (works on web + mobile). */
+export const performSignOut = async (
+  clearAuth: () => void,
+  clearUserSession: () => void
+): Promise<void> => {
+  signOutInProgress = true;
+  try {
+    clearAuth();
+    clearUserSession();
+    await logoutUser();
+  } catch (error) {
+    console.error('[authService] performSignOut:', error);
+  } finally {
+    signOutInProgress = false;
+  }
+};
+
 export const fetchUserAccount = async (uid: string): Promise<UserAccount | null> => {
   if (!isFirebaseConfigured()) {
     return null;

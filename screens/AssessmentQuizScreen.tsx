@@ -69,10 +69,8 @@ const AssessmentQuizScreen: React.FC<AssessmentQuizScreenProps> = ({
       const updatedProfile = {
         name: userProfile?.name || 'Student',
         email: userProfile?.email || account?.email,
+        seniorHighStrand: userProfile?.seniorHighStrand || 'Other / Undecided',
         learningGoals: userProfile?.learningGoals || 'Career advancement',
-        currentSkills: userProfile?.currentSkills || 'Beginner',
-        learningStyle: userProfile?.learningStyle || 'Mixed',
-        experience: userProfile?.experience || '0-1 year',
         selectedPath: topRecommendation,
         quizHistory: userProfile?.quizHistory || [],
       };

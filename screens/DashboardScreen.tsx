@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, borderRadius, typography } from '../utils/theme';
@@ -15,9 +14,10 @@ import { PrimaryButton } from '../components/PrimaryButton';
 import { DashboardScreenProps } from '../navigation/types';
 import { useUserStore } from '../stores/userStore';
 import { useCourseStore } from '../stores/courseStore';
-import { ChevronRight, BarChart3, BookOpen, User, LogOut } from 'lucide-react-native';
+import { ChevronRight, GraduationCap, BookOpen, User, LogOut } from 'lucide-react-native';
 import { useAuthStore } from '../stores/authStore';
-import { logoutUser } from '../services/authService';
+import { performSignOut } from '../services/authService';
+import { confirmAction } from '../utils/confirm';
 import { loadCourseProgress } from '../services/progressService';
 
 const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
@@ -66,19 +66,13 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   };
 
   const handleLogout = () => {
-    Alert.alert('Sign out', 'Are you sure?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Sign out',
-        style: 'destructive',
-        onPress: async () => {
-          await logoutUser();
-          logout();
-          resetUserSession();
-          navigation.replace('Login');
-        },
-      },
-    ]);
+    confirmAction(
+      'Sign out',
+      'Are you sure you want to sign out?',
+      'Sign out',
+      () => performSignOut(logout, resetUserSession),
+      { destructive: true }
+    );
   };
 
   return (
@@ -127,9 +121,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
               icon={<BookOpen size={24} color={colors.primary} strokeWidth={1.5} />}
             />
             <StatCard
-              label="Skill Level"
-              value={userProfile.currentSkills || 'Beginner'}
-              icon={<BarChart3 size={24} color={colors.secondary} strokeWidth={1.5} />}
+              label="SHS Strand"
+              value={userProfile.seniorHighStrand || 'Not set'}
+              icon={<GraduationCap size={24} color={colors.secondary} strokeWidth={1.5} />}
             />
           </View>
         )}

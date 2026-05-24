@@ -14,10 +14,7 @@ import { useAuthStore } from '../stores/authStore';
 import { useUserStore } from '../stores/userStore';
 import { saveUserProfile } from '../services/authService';
 import { ProfileSetupScreenProps } from '../navigation/types';
-
-const LEARNING_STYLES = ['Visual', 'Hands-on', 'Reading', 'Mixed'];
-const SKILL_LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
-const EXPERIENCE = ['0-1 year', '1-3 years', '3+ years'];
+import { SENIOR_HIGH_STRANDS } from '../utils/constants';
 
 const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation }) => {
   const account = useAuthStore((s) => s.account);
@@ -25,25 +22,26 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation }) =
   const setAccount = useAuthStore((s) => s.setAccount);
 
   const [name, setName] = useState('');
+  const [seniorHighStrand, setSeniorHighStrand] = useState<string>(
+    SENIOR_HIGH_STRANDS[0]
+  );
   const [learningGoals, setLearningGoals] = useState('');
-  const [currentSkills, setCurrentSkills] = useState(SKILL_LEVELS[0]);
-  const [learningStyle, setLearningStyle] = useState(LEARNING_STYLES[3]);
-  const [experience, setExperience] = useState(EXPERIENCE[0]);
   const [loading, setLoading] = useState(false);
 
   const handleSave = async () => {
-    if (!name.trim() || !learningGoals.trim()) {
-      Alert.alert('Required', 'Please enter your name and learning goals.');
+    if (!name.trim() || !learningGoals.trim() || !seniorHighStrand) {
+      Alert.alert(
+        'Required',
+        'Please enter your name, senior high strand, and learning goals.'
+      );
       return;
     }
 
     const profile = {
       name: name.trim(),
       email: account?.email,
+      seniorHighStrand,
       learningGoals: learningGoals.trim(),
-      currentSkills,
-      learningStyle,
-      experience,
       quizHistory: [],
     };
 
@@ -97,6 +95,17 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation }) =
         </Text>
 
         <AuthTextInput label="Full name" value={name} onChangeText={setName} placeholder="Juan Dela Cruz" />
+
+        <Text style={styles.fieldLabel}>Senior high strand</Text>
+        <Text style={styles.fieldHint}>
+          Your SHS track helps us align course suggestions with your background.
+        </Text>
+        <ChipRow
+          options={[...SENIOR_HIGH_STRANDS]}
+          value={seniorHighStrand}
+          onChange={setSeniorHighStrand}
+        />
+
         <AuthTextInput
           label="Learning goals"
           value={learningGoals}
@@ -105,15 +114,6 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation }) =
           multiline
           style={styles.textArea}
         />
-
-        <Text style={styles.fieldLabel}>Current skill level</Text>
-        <ChipRow options={SKILL_LEVELS} value={currentSkills} onChange={setCurrentSkills} />
-
-        <Text style={styles.fieldLabel}>Preferred learning style</Text>
-        <ChipRow options={LEARNING_STYLES} value={learningStyle} onChange={setLearningStyle} />
-
-        <Text style={styles.fieldLabel}>Experience / time commitment</Text>
-        <ChipRow options={EXPERIENCE} value={experience} onChange={setExperience} />
 
         <TouchableOpacity
           style={[styles.primaryBtn, loading && styles.disabled]}
@@ -149,6 +149,12 @@ const styles = StyleSheet.create({
     fontWeight: typography.weights.semibold,
     color: colors.text,
     marginBottom: spacing.sm,
+  },
+  fieldHint: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
+    lineHeight: 18,
   },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.lg },
   chip: {

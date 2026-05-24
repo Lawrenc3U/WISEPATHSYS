@@ -48,12 +48,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
         adminCode
       );
       setAccount(account);
-
-      if (account.role === 'admin') {
-        navigation.replace('AdminDashboard');
-      } else {
-        navigation.replace('ProfileSetup');
-      }
+      // RootNavigator switches to AppNavigator when account is set
     } catch (error: unknown) {
       Alert.alert('Registration failed', getFirebaseAuthErrorMessage(error));
     } finally {

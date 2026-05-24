@@ -66,13 +66,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         }
       }
 
-      if (account.role === 'admin') {
-        navigation.replace('AdminDashboard');
-      } else if (!account.profileComplete) {
-        navigation.replace('ProfileSetup');
-      } else {
-        navigation.replace('Dashboard');
-      }
+      // RootNavigator switches to AppNavigator when account is set
     } catch (error: unknown) {
       Alert.alert('Login failed', getFirebaseAuthErrorMessage(error));
     } finally {

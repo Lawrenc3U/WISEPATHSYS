@@ -13,7 +13,8 @@ import {
 import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
 import { AdminDashboardScreenProps } from '../navigation/types';
 import { useAuthStore } from '../stores/authStore';
-import { logoutUser } from '../services/authService';
+import { performSignOut } from '../services/authService';
+import { confirmAction } from '../utils/confirm';
 import { useUserStore } from '../stores/userStore';
 import {
   Users,
@@ -61,19 +62,13 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
   };
 
   const handleLogout = () => {
-    Alert.alert('Sign out', 'Are you sure you want to sign out?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Sign out',
-        style: 'destructive',
-        onPress: async () => {
-          await logoutUser();
-          logout();
-          resetUserSession();
-          navigation.replace('Login');
-        },
-      },
-    ]);
+    confirmAction(
+      'Sign out',
+      'Are you sure you want to sign out?',
+      'Sign out',
+      () => performSignOut(logout, resetUserSession),
+      { destructive: true }
+    );
   };
 
   const formatRelativeTime = (date: Date) => {
