@@ -1,0 +1,70 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /courseProgress/{progressId} {
+      function isProgressOwner() {
+        return isSignedIn()
+          && progressId.matches('^' + request.auth.uid + '__.*');
+      }
+
+      function ownsProgressData() {
+        return isSignedIn()
+          && resource != null
+          && resource.data.userId == request.auth.uid;
+      }
+
+      allow read: if isProgressOwner() || ownsProgressData() || isAdmin();
+      allow create: if isProgressOwner()
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if isProgressOwner() || ownsProgressData() || isAdmin();
+      allow delete: if isProgressOwner() || ownsProgressData() || isAdmin();
+    }
+
+    match /courses/{courseId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /quizQuestions/{questionId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /assessments/{assessmentId} {
+      function ownsAssessment() {
+        return isSignedIn()
+          && resource != null
+          && resource.data.userId == request.auth.uid;
+      }
+
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow read: if ownsAssessment() || isAdmin();
+      allow update: if isAdmin();
+      allow delete: if ownsAssessment() || isAdmin();
+    }
+  }
+}
