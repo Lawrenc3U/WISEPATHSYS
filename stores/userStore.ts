@@ -1,5 +1,11 @@
 import { create } from 'zustand';
-import { UserProfile, Recommendation, QuizResult, StudentProgress } from '../utils/types';
+import {
+  UserProfile,
+  Recommendation,
+  QuizResult,
+  StudentProgress,
+  ProgramAssessmentCompletion,
+} from '../utils/types';
 
 interface UserStore {
   userProfile: UserProfile | null;
@@ -9,6 +15,7 @@ interface UserStore {
   quizHistory: QuizResult[];
   studentProgress: StudentProgress | null;
   progressByCourse: Record<string, StudentProgress>;
+  programAssessmentCompletions: ProgramAssessmentCompletion[];
   selectedCourseId: string | null;
   
   setUserProfile: (profile: UserProfile) => void;
@@ -23,6 +30,8 @@ interface UserStore {
   setStudentProgress: (progress: StudentProgress) => void;
   setProgressByCourse: (map: Record<string, StudentProgress>) => void;
   setCourseProgress: (courseId: string, progress: StudentProgress) => void;
+  setProgramAssessmentCompletions: (completions: ProgramAssessmentCompletion[]) => void;
+  addProgramAssessmentCompletion: (completion: ProgramAssessmentCompletion) => void;
   setSelectedCourseId: (courseId: string) => void;
   resetUserSession: () => void;
   hydrateFromAccount: (profile: UserProfile, history?: QuizResult[]) => void;
@@ -36,6 +45,7 @@ export const useUserStore = create<UserStore>((set) => ({
   quizHistory: [],
   studentProgress: null,
   progressByCourse: {},
+  programAssessmentCompletions: [],
   selectedCourseId: null,
 
   setUserProfile: (profile: UserProfile) => set({ userProfile: profile }),
@@ -119,6 +129,25 @@ export const useUserStore = create<UserStore>((set) => ({
         state.selectedCourseId === courseId ? progress : state.studentProgress,
     })),
 
+  setProgramAssessmentCompletions: (completions: ProgramAssessmentCompletion[]) =>
+    set({ programAssessmentCompletions: completions }),
+
+  addProgramAssessmentCompletion: (completion: ProgramAssessmentCompletion) =>
+    set((state) => {
+      const exists = state.programAssessmentCompletions.some(
+        (c) =>
+          c.courseId === completion.courseId &&
+          c.assessmentId === completion.assessmentId
+      );
+      if (exists) return state;
+      return {
+        programAssessmentCompletions: [
+          ...state.programAssessmentCompletions,
+          completion,
+        ],
+      };
+    }),
+
   setSelectedCourseId: (courseId: string) =>
     set((state) => ({
       selectedCourseId: courseId,
@@ -134,6 +163,7 @@ export const useUserStore = create<UserStore>((set) => ({
       quizHistory: [],
       studentProgress: null,
       progressByCourse: {},
+      programAssessmentCompletions: [],
       selectedCourseId: null,
     }),
 

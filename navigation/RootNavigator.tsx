@@ -11,6 +11,7 @@ import DashboardScreen from '../screens/DashboardScreen';
 import AssessmentQuizScreen from '../screens/AssessmentQuizScreen';
 import RecommendationsScreen from '../screens/RecommendationsScreen';
 import CourseDetailScreen from '../screens/CourseDetailScreen';
+import ProgramAssessmentScreen from '../screens/ProgramAssessmentScreen';
 import ProgressTrackingScreen from '../screens/ProgressTrackingScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import AdminDashboardScreen from '../screens/AdminDashboardScreen';
@@ -33,6 +34,7 @@ import {
 } from '../services/authService';
 import { loadUserAssessments } from '../services/userDataService';
 import { loadAllCourseProgress } from '../services/progressService';
+import { loadUserProgramAssessmentCompletions } from '../services/programAssessmentService';
 import { useCourseStore } from '../stores/courseStore';
 import { useAuthStore } from '../stores/authStore';
 import { useUserStore } from '../stores/userStore';
@@ -57,6 +59,9 @@ const RootNavigator: React.FC = () => {
   const isLoading = useAuthStore((state) => state.isLoading);
   const hydrateFromAccount = useUserStore((state) => state.hydrateFromAccount);
   const setProgressByCourse = useUserStore((state) => state.setProgressByCourse);
+  const setProgramAssessmentCompletions = useUserStore(
+    (state) => state.setProgramAssessmentCompletions
+  );
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -101,8 +106,12 @@ const RootNavigator: React.FC = () => {
         const userAccount = await fetchUserAccount(user.uid);
         if (userAccount) {
           setAccount(userAccount);
-          const progressMap = await loadAllCourseProgress(user.uid);
+          const [progressMap, programCompletions] = await Promise.all([
+            loadAllCourseProgress(user.uid),
+            loadUserProgramAssessmentCompletions(user.uid),
+          ]);
           setProgressByCourse(progressMap);
+          setProgramAssessmentCompletions(programCompletions);
           if (userAccount.profile) {
             const history = await loadUserAssessments(user.uid);
             hydrateFromAccount(userAccount.profile, history);
@@ -182,6 +191,11 @@ const RootNavigator: React.FC = () => {
           name="CourseDetail"
           component={CourseDetailScreen}
           options={{ headerTitle: 'Course Details' }}
+        />
+        <Stack.Screen
+          name="ProgramAssessment"
+          component={ProgramAssessmentScreen}
+          options={{ headerTitle: 'Program Assessment' }}
         />
         <Stack.Screen
           name="Progress"

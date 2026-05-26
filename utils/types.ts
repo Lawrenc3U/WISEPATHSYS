@@ -21,6 +21,22 @@ export interface Course {
   curriculum: string[];
 }
 
+/** Short program-specific assessment (separate from the global career quiz) */
+export interface ProgramAssessment {
+  id: string;
+  courseId: string;
+  title: string;
+  description: string;
+  questions: QuizQuestion[];
+}
+
+export interface ProgramAssessmentCompletion {
+  userId: string;
+  courseId: string;
+  assessmentId: string;
+  completedAt: Date;
+}
+
 export interface Recommendation {
   id: string;
   title: string;

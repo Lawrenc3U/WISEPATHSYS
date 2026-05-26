@@ -1,4 +1,4 @@
-import { QuizQuestion, Course } from './types';
+import { QuizQuestion, Course, ProgramAssessment } from './types';
 
 /** Admin registration passcode (override via EXPO_PUBLIC_ADMIN_CODE in .env) */
 export const ADMIN_REGISTRATION_CODE =
@@ -228,6 +228,219 @@ export const COURSE_SCORING_WEIGHTS: Record<
 );
 
 export const PROGRAM_COURSE_IDS = ['hospitality', 'it', 'criminal_justice'] as const;
+
+/** Per-program assessments — each recommended program has its own set */
+export const PROGRAM_ASSESSMENTS: ProgramAssessment[] = [
+  {
+    id: 'hosp_orientation',
+    courseId: 'hospitality',
+    title: 'Hospitality Orientation',
+    description: 'Explore guest service mindset and industry basics.',
+    questions: [
+      {
+        id: 'hosp_o1',
+        text: 'What excites you most about hospitality?',
+        type: 'multipleChoice',
+        options: [
+          'Creating memorable guest experiences',
+          'Managing events and operations',
+          'Food and beverage leadership',
+          'Tourism and destination marketing',
+        ],
+      },
+      {
+        id: 'hosp_o2',
+        text: 'How comfortable are you leading a front-desk or service team?',
+        type: 'multipleChoice',
+        options: [
+          'Very comfortable — I enjoy leading people',
+          'Somewhat — I am building confidence',
+          'Prefer supporting roles for now',
+          'Not sure yet',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'hosp_skills',
+    courseId: 'hospitality',
+    title: 'Service Skills Check',
+    description: 'Gauge your customer service and operations readiness.',
+    questions: [
+      {
+        id: 'hosp_s1',
+        text: 'When a guest complaint arises, you typically…',
+        type: 'multipleChoice',
+        options: [
+          'Listen calmly and resolve quickly',
+          'Escalate to a supervisor',
+          'Follow standard procedures step by step',
+          'Feel unsure but want to learn',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'hosp_career',
+    courseId: 'hospitality',
+    title: 'Career Fit — Hospitality',
+    description: 'Match your goals with hospitality career paths.',
+    questions: [
+      {
+        id: 'hosp_c1',
+        text: 'Which hospitality career appeals to you most?',
+        type: 'multipleChoice',
+        options: [
+          'Hotel or resort management',
+          'Event coordination',
+          'Restaurant or F&B management',
+          'Tourism director',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'it_orientation',
+    courseId: 'it',
+    title: 'IT Foundations',
+    description: 'Check your interest in computing and problem solving.',
+    questions: [
+      {
+        id: 'it_o1',
+        text: 'Which IT area interests you most?',
+        type: 'multipleChoice',
+        options: [
+          'Software development',
+          'Cybersecurity',
+          'Networks and infrastructure',
+          'Data and databases',
+        ],
+      },
+      {
+        id: 'it_o2',
+        text: 'How often do you practice coding or tech projects?',
+        type: 'multipleChoice',
+        options: [
+          'Regularly — it is a hobby',
+          'Sometimes for school or work',
+          'Rarely but curious',
+          'Just starting out',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'it_skills',
+    courseId: 'it',
+    title: 'Technical Readiness',
+    description: 'Assess comfort with logic, systems, and learning tech.',
+    questions: [
+      {
+        id: 'it_s1',
+        text: 'When learning a new tool or language, you prefer…',
+        type: 'multipleChoice',
+        options: [
+          'Hands-on tutorials and projects',
+          'Structured courses with assignments',
+          'Pairing with mentors or peers',
+          'Reading docs and experimenting alone',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'it_career',
+    courseId: 'it',
+    title: 'Career Fit — IT',
+    description: 'Align your strengths with IT career paths.',
+    questions: [
+      {
+        id: 'it_c1',
+        text: 'Your ideal first IT role would be…',
+        type: 'multipleChoice',
+        options: [
+          'Developer or engineer',
+          'Security analyst',
+          'Network or cloud administrator',
+          'IT project coordinator',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'cj_orientation',
+    courseId: 'criminal_justice',
+    title: 'Criminal Justice Overview',
+    description: 'Explore public service and justice system interest.',
+    questions: [
+      {
+        id: 'cj_o1',
+        text: 'What draws you to criminal justice?',
+        type: 'multipleChoice',
+        options: [
+          'Protecting the community',
+          'Investigations and forensics',
+          'Legal and procedural work',
+          'Corrections and rehabilitation',
+        ],
+      },
+      {
+        id: 'cj_o2',
+        text: 'How do you handle high-pressure situations?',
+        type: 'multipleChoice',
+        options: [
+          'Stay calm and follow protocol',
+          'Think quickly and adapt',
+          'Rely on team communication',
+          'Still developing those skills',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'cj_skills',
+    courseId: 'criminal_justice',
+    title: 'Ethics & Procedure Check',
+    description: 'Reflect on integrity and attention to detail.',
+    questions: [
+      {
+        id: 'cj_s1',
+        text: 'Accuracy and ethics in documentation are…',
+        type: 'multipleChoice',
+        options: [
+          'Essential — I am very detail-oriented',
+          'Important — I double-check my work',
+          'Something I am learning',
+          'New to me but willing to learn',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'cj_career',
+    courseId: 'criminal_justice',
+    title: 'Career Fit — Criminal Justice',
+    description: 'Match your goals with justice careers.',
+    questions: [
+      {
+        id: 'cj_c1',
+        text: 'Which path interests you most?',
+        type: 'multipleChoice',
+        options: [
+          'Law enforcement officer',
+          'Detective or investigator',
+          'Forensic analyst',
+          'Legal or corrections specialist',
+        ],
+      },
+    ],
+  },
+];
+
+export const getProgramAssessmentsForCourse = (
+  courseId: string
+): ProgramAssessment[] =>
+  PROGRAM_ASSESSMENTS.filter((a) => a.courseId === courseId);
 
 /**
  * ============================================

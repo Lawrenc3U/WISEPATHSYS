@@ -9,6 +9,7 @@ export type RootStackParamList = {
   AssessmentQuiz: undefined;
   Recommendations: undefined;
   CourseDetail: { courseId: string };
+  ProgramAssessment: { courseId: string; assessmentId: string };
   Progress: { courseId: string };
   Profile: undefined;
   AdminDashboard: undefined;
@@ -39,6 +40,10 @@ export type RecommendationsScreenProps = NativeStackScreenProps<
 export type CourseDetailScreenProps = NativeStackScreenProps<
   RootStackParamList,
   'CourseDetail'
+>;
+export type ProgramAssessmentScreenProps = NativeStackScreenProps<
+  RootStackParamList,
+  'ProgramAssessment'
 >;
 export type ProgressScreenProps = NativeStackScreenProps<RootStackParamList, 'Progress'>;
 export type ProfileScreenProps = NativeStackScreenProps<RootStackParamList, 'Profile'>;

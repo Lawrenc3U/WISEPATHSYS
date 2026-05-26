@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, ScrollView, Text, StyleSheet } from 'react-native';
+import { View, ScrollView, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, borderRadius, typography } from '../utils/theme';
 import { useCourseStore } from '../stores/courseStore';
@@ -8,7 +8,18 @@ import { useAuthStore } from '../stores/authStore';
 import { CourseDetailScreenProps } from '../navigation/types';
 import { enrollInCourse, getTemplateProgress } from '../services/progressService';
 import { Recommendation } from '../utils/types';
-import { CheckCircle, Clock, Award, TrendingUp, Rocket } from 'lucide-react-native';
+import {
+  CheckCircle,
+  Clock,
+  Award,
+  TrendingUp,
+  Rocket,
+  ClipboardList,
+} from 'lucide-react-native';
+import {
+  getAssessmentsForCourse,
+  isAssessmentComplete,
+} from '../services/programAssessmentService';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
 import { PrimaryButton } from '../components/PrimaryButton';
@@ -25,10 +36,20 @@ const CourseDetailScreen = ({
   const setSelectedPath = useUserStore((state) => state.setSelectedPath);
   const setUserProfile = useUserStore((state) => state.setUserProfile);
   const userProfile = useUserStore((state) => state.userProfile);
+  const programCompletions = useUserStore(
+    (state) => state.programAssessmentCompletions
+  );
   const account = useAuthStore((state) => state.account);
   const [enrolling, setEnrolling] = useState(false);
 
   const course = useMemo(() => getCourseById(courseId), [courseId, getCourseById]);
+  const programAssessments = useMemo(
+    () => getAssessmentsForCourse(courseId),
+    [courseId]
+  );
+
+  const ASSESSMENT_DONE = '#2563EB';
+  const ASSESSMENT_PENDING = '#EAB308';
 
   const handleStartCourse = async () => {
     if (!course) return;
@@ -147,7 +168,59 @@ const CourseDetailScreen = ({
           </View>
         </AnimatedFadeIn>
 
-        <AnimatedFadeIn index={3}>
+        {programAssessments.length > 0 && (
+          <AnimatedFadeIn index={3}>
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <ClipboardList size={20} color={colors.primary} />
+                <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>
+                  Program assessments
+                </Text>
+              </View>
+              <Text style={styles.assessmentHint}>
+                Complete each assessment to build your program progress.
+              </Text>
+              {programAssessments.map((assessment) => {
+                const done = isAssessmentComplete(
+                  programCompletions,
+                  courseId,
+                  assessment.id
+                );
+                return (
+                  <TouchableOpacity
+                    key={assessment.id}
+                    style={[
+                      styles.assessmentRow,
+                      {
+                        backgroundColor: done ? ASSESSMENT_DONE : ASSESSMENT_PENDING,
+                      },
+                    ]}
+                    onPress={() => {
+                      if (!done) {
+                        navigation.navigate('ProgramAssessment', {
+                          courseId,
+                          assessmentId: assessment.id,
+                        });
+                      }
+                    }}
+                    disabled={done}
+                    activeOpacity={done ? 1 : 0.7}
+                  >
+                    <View style={styles.assessmentRowContent}>
+                      <Text style={styles.assessmentTitle}>{assessment.title}</Text>
+                      <Text style={styles.assessmentStatus}>
+                        {done ? 'Completed' : 'Tap to start'}
+                      </Text>
+                    </View>
+                    {done && <CheckCircle size={22} color="#FFF" />}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </AnimatedFadeIn>
+        )}
+
+        <AnimatedFadeIn index={4}>
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <TrendingUp size={20} color={colors.primary} />
@@ -161,7 +234,7 @@ const CourseDetailScreen = ({
           </View>
         </AnimatedFadeIn>
 
-        <AnimatedFadeIn index={4}>
+        <AnimatedFadeIn index={5}>
           <View style={styles.infoBox}>
             <Rocket size={20} color={colors.primary} />
             <Text style={styles.infoText}>
@@ -172,7 +245,7 @@ const CourseDetailScreen = ({
         </AnimatedFadeIn>
       </ScrollView>
 
-      <AnimatedFadeIn index={5} style={styles.footer}>
+      <AnimatedFadeIn index={6} style={styles.footer}>
         <PrimaryButton
           label={enrolling ? 'Enrolling...' : 'Start Course'}
           onPress={handleStartCourse}
@@ -278,6 +351,31 @@ const styles = StyleSheet.create({
     borderLeftColor: colors.primary,
   },
   careerText: { fontSize: typography.sizes.sm, color: colors.text },
+  assessmentHint: {
+    fontSize: typography.sizes.sm,
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
+    lineHeight: 20,
+  },
+  assessmentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.sm,
+  },
+  assessmentRowContent: { flex: 1, marginRight: spacing.md },
+  assessmentTitle: {
+    fontSize: typography.sizes.base,
+    fontWeight: typography.weights.bold,
+    color: '#FFFFFF',
+    marginBottom: spacing.xs,
+  },
+  assessmentStatus: {
+    fontSize: typography.sizes.xs,
+    color: 'rgba(255,255,255,0.9)',
+  },
   infoBox: {
     flexDirection: 'row',
     gap: spacing.md,

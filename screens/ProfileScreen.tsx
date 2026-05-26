@@ -21,6 +21,13 @@ import {
   clearAllUserCourseProgress,
   deleteCourseProgressRecord,
 } from '../services/progressService';
+import {
+  getAssessmentsForCourse,
+  isAssessmentComplete,
+  deleteCompletionsForCourse,
+  clearAllUserProgramAssessmentCompletions,
+} from '../services/programAssessmentService';
+import { useCourseStore } from '../stores/courseStore';
 import { ProfileScreenProps } from '../navigation/types';
 import { Award, Zap, Clock, Lightbulb, Trash2 } from 'lucide-react-native';
 import { QuizResult } from '../utils/types';
@@ -34,7 +41,18 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const setUserProfile = useUserStore((state) => state.setUserProfile);
   const setProgressByCourse = useUserStore((state) => state.setProgressByCourse);
   const setStudentProgress = useUserStore((state) => state.setStudentProgress);
+  const programCompletions = useUserStore(
+    (state) => state.programAssessmentCompletions
+  );
+  const setProgramAssessmentCompletions = useUserStore(
+    (state) => state.setProgramAssessmentCompletions
+  );
+  const selectedCourseId = useUserStore((state) => state.selectedCourseId);
+  const getCourseById = useCourseStore((state) => state.getCourseById);
   const account = useAuthStore((state) => state.account);
+
+  const ASSESSMENT_DONE = '#2563EB';
+  const ASSESSMENT_PENDING = '#EAB308';
   const logout = useAuthStore((state) => state.logout);
   const resetUserSession = useUserStore((state) => state.resetUserSession);
 
@@ -51,6 +69,20 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   );
 
   const latestResult = sortedHistory[0];
+
+  /** Only the program the student selected (learning path / enrolled course) */
+  const selectedProgramCourseId = useMemo(
+    () => userProfile?.selectedPath?.courses[0]?.id ?? selectedCourseId ?? null,
+    [userProfile?.selectedPath, selectedCourseId]
+  );
+
+  const selectedProgramAssessments = useMemo(() => {
+    if (!selectedProgramCourseId) return null;
+    const course = getCourseById(selectedProgramCourseId);
+    const assessments = getAssessmentsForCourse(selectedProgramCourseId);
+    if (assessments.length === 0) return null;
+    return { course, assessments, courseId: selectedProgramCourseId };
+  }, [selectedProgramCourseId, getCourseById]);
 
   const persistProfileHistory = async (history: QuizResult[]) => {
     if (!account?.uid || !userProfile) return;
@@ -76,9 +108,13 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
     if (history.length === 0) {
       if (account?.uid) {
-        await clearAllUserCourseProgress(account.uid);
+        await Promise.all([
+          clearAllUserCourseProgress(account.uid),
+          clearAllUserProgramAssessmentCompletions(account.uid),
+        ]);
       }
       setProgressByCourse({});
+      setProgramAssessmentCompletions([]);
       setStudentProgress(null);
       return;
     }
@@ -94,7 +130,17 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
     if (courseIds.size === 0 || !account?.uid) return;
 
     await Promise.all(
-      [...courseIds].map((id) => deleteCourseProgressRecord(account.uid!, id))
+      [...courseIds].map(async (id) => {
+        await deleteCourseProgressRecord(account.uid!, id);
+        await deleteCompletionsForCourse(account.uid!, id);
+      })
+    );
+
+    const removedIds = courseIds;
+    setProgramAssessmentCompletions(
+      useUserStore
+        .getState()
+        .programAssessmentCompletions.filter((c) => !removedIds.has(c.courseId))
     );
 
     const nextMap = { ...useUserStore.getState().progressByCourse };
@@ -303,6 +349,67 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                 </Text>
               </View>
             </View>
+          </View>
+        )}
+
+        {selectedProgramAssessments && (
+          <View style={[styles.card, shadows.md]}>
+            <View style={styles.cardHeader}>
+              <Award size={24} color={colors.primary} />
+              <Text style={styles.cardTitle}>Program Assessments</Text>
+            </View>
+            <Text style={styles.programGroupTitle}>
+              {selectedProgramAssessments.course?.title ??
+                selectedProgramAssessments.courseId}
+            </Text>
+            <Text style={styles.programAssessmentLegend}>
+              <Text style={[styles.legendDot, { color: ASSESSMENT_DONE }]}>
+                ●
+              </Text>{' '}
+              Blue = completed ·{' '}
+              <Text style={[styles.legendDot, { color: ASSESSMENT_PENDING }]}>
+                ●
+              </Text>{' '}
+              Yellow = not yet done
+            </Text>
+
+            {selectedProgramAssessments.assessments.map((assessment) => {
+              const done = isAssessmentComplete(
+                programCompletions,
+                selectedProgramAssessments.courseId,
+                assessment.id
+              );
+              return (
+                <TouchableOpacity
+                  key={assessment.id}
+                  style={[
+                    styles.programAssessmentChip,
+                    {
+                      backgroundColor: done
+                        ? ASSESSMENT_DONE
+                        : ASSESSMENT_PENDING,
+                    },
+                  ]}
+                  onPress={() => {
+                    if (!done) {
+                      navigation.navigate('ProgramAssessment', {
+                        courseId: selectedProgramAssessments.courseId,
+                        assessmentId: assessment.id,
+                      });
+                    }
+                  }}
+                  disabled={done}
+                  activeOpacity={done ? 1 : 0.7}
+                >
+                  <Text style={styles.programAssessmentChipText}>
+                    {assessment.title}
+                  </Text>
+                  <Text style={styles.programAssessmentChipStatus}>
+                    {done ? 'Done' : 'Start'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         )}
 
@@ -563,6 +670,45 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: typography.sizes.base,
     color: colors.text,
+    fontWeight: typography.weights.medium,
+  },
+  programAssessmentLegend: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+    marginTop: -spacing.md,
+    marginBottom: spacing.lg,
+    lineHeight: 18,
+  },
+  legendDot: { fontWeight: typography.weights.bold },
+  programGroup: {
+    marginBottom: spacing.lg,
+    gap: spacing.sm,
+  },
+  programGroupTitle: {
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.bold,
+    color: colors.text,
+    marginBottom: spacing.xs,
+  },
+  programAssessmentChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.xs,
+  },
+  programAssessmentChipText: {
+    flex: 1,
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.semibold,
+    color: '#FFFFFF',
+    marginRight: spacing.md,
+  },
+  programAssessmentChipStatus: {
+    fontSize: typography.sizes.xs,
+    color: 'rgba(255,255,255,0.95)',
     fontWeight: typography.weights.medium,
   },
   historyItem: {
