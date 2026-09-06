@@ -14,6 +14,14 @@ import { useAuthStore } from '../stores/authStore';
 import { useUserStore } from '../stores/userStore';
 import { saveUserProfile } from '../services/authService';
 import { ProfileSetupScreenProps } from '../navigation/types';
+import {
+  STUDENT_STATUS_OPTIONS,
+  SHS_STRANDS,
+  RESIDENCE_TYPE_OPTIONS,
+  PARENTAL_INCOME_OPTIONS,
+  CAREER_INTEREST_OPTIONS,
+} from '../utils/constants';
+import { StudentStatus, ResidenceType, ParentalIncomeLevel } from '../utils/types';
 
 const LEARNING_STYLES = ['Visual', 'Hands-on', 'Reading', 'Mixed'];
 const SKILL_LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
@@ -29,11 +37,33 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation }) =
   const [currentSkills, setCurrentSkills] = useState(SKILL_LEVELS[0]);
   const [learningStyle, setLearningStyle] = useState(LEARNING_STYLES[3]);
   const [experience, setExperience] = useState(EXPERIENCE[0]);
+
+  // Panel-required background/academic fields
+  const [studentStatus, setStudentStatus] = useState<StudentStatus>('incoming');
+  const [shsStrand, setShsStrand] = useState(SHS_STRANDS[0]);
+  const [academicAverage, setAcademicAverage] = useState('');
+  const [residenceType, setResidenceType] = useState<ResidenceType>('urban');
+  const [parentalIncomeLevel, setParentalIncomeLevel] =
+    useState<ParentalIncomeLevel>('prefer_not_to_say');
+  const [careerInterests, setCareerInterests] = useState<string[]>([]);
+
   const [loading, setLoading] = useState(false);
+
+  const toggleCareerInterest = (interest: string) => {
+    setCareerInterests((prev) =>
+      prev.includes(interest)
+        ? prev.filter((i) => i !== interest)
+        : [...prev, interest]
+    );
+  };
 
   const handleSave = async () => {
     if (!name.trim() || !learningGoals.trim()) {
       Alert.alert('Required', 'Please enter your name and learning goals.');
+      return;
+    }
+    if (careerInterests.length === 0) {
+      Alert.alert('Required', 'Please select at least one career interest area.');
       return;
     }
 
@@ -45,6 +75,13 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation }) =
       learningStyle,
       experience,
       quizHistory: [],
+
+      studentStatus,
+      shsStrand,
+      academicAverage: academicAverage.trim(),
+      residenceType,
+      parentalIncomeLevel,
+      careerInterests,
     };
 
     setLoading(true);
@@ -88,6 +125,60 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation }) =
     </View>
   );
 
+  /** Same visual as ChipRow but keyed on a value/label pair, single-select */
+  const ValueChipRow = <T extends string>({
+    options,
+    value,
+    onChange,
+  }: {
+    options: { value: T; label: string }[];
+    value: T;
+    onChange: (v: T) => void;
+  }) => (
+    <View style={styles.chipRow}>
+      {options.map((opt) => (
+        <TouchableOpacity
+          key={opt.value}
+          style={[styles.chip, value === opt.value && styles.chipSelected]}
+          onPress={() => onChange(opt.value)}
+        >
+          <Text
+            style={[styles.chipText, value === opt.value && styles.chipTextSelected]}
+          >
+            {opt.label}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+
+  /** Multi-select chip row for career interests */
+  const MultiChipRow = ({
+    options,
+    values,
+    onToggle,
+  }: {
+    options: string[];
+    values: string[];
+    onToggle: (v: string) => void;
+  }) => (
+    <View style={styles.chipRow}>
+      {options.map((opt) => (
+        <TouchableOpacity
+          key={opt}
+          style={[styles.chip, values.includes(opt) && styles.chipSelected]}
+          onPress={() => onToggle(opt)}
+        >
+          <Text
+            style={[styles.chipText, values.includes(opt) && styles.chipTextSelected]}
+          >
+            {opt}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
@@ -105,6 +196,54 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation }) =
           multiline
           style={styles.textArea}
         />
+
+        <Text style={styles.sectionHeader}>Academic background</Text>
+
+        <Text style={styles.fieldLabel}>Are you an incoming or current college student?</Text>
+        <ValueChipRow
+          options={STUDENT_STATUS_OPTIONS}
+          value={studentStatus}
+          onChange={setStudentStatus}
+        />
+
+        <Text style={styles.fieldLabel}>Senior High School strand/track</Text>
+        <ChipRow options={SHS_STRANDS} value={shsStrand} onChange={setShsStrand} />
+
+        <AuthTextInput
+          label="General weighted average"
+          value={academicAverage}
+          onChangeText={setAcademicAverage}
+          placeholder="e.g. 90 or 1.75, based on your school's grading scale"
+        />
+
+        <Text style={styles.sectionHeader}>Background</Text>
+
+        <Text style={styles.fieldLabel}>Residence type</Text>
+        <ValueChipRow
+          options={RESIDENCE_TYPE_OPTIONS}
+          value={residenceType}
+          onChange={setResidenceType}
+        />
+
+        <Text style={styles.fieldLabel}>Household monthly income</Text>
+        <ValueChipRow
+          options={PARENTAL_INCOME_OPTIONS}
+          value={parentalIncomeLevel}
+          onChange={setParentalIncomeLevel}
+        />
+
+        <Text style={styles.sectionHeader}>Interests</Text>
+
+        <Text style={styles.fieldLabel}>
+          Career interest areas (select all that apply)
+        </Text>
+        <MultiChipRow
+          options={CAREER_INTEREST_OPTIONS}
+          values={careerInterests}
+          onToggle={toggleCareerInterest}
+        />
+
+        <Text style={styles.sectionHeader}>Learning style</Text>
 
         <Text style={styles.fieldLabel}>Current skill level</Text>
         <ChipRow options={SKILL_LEVELS} value={currentSkills} onChange={setCurrentSkills} />
@@ -143,6 +282,13 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     marginBottom: spacing.xl,
     lineHeight: 22,
+  },
+  sectionHeader: {
+    fontSize: typography.sizes.lg,
+    fontWeight: typography.weights.bold,
+    color: colors.text,
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
   },
   fieldLabel: {
     fontSize: typography.sizes.sm,

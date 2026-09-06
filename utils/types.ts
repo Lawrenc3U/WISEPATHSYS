@@ -81,6 +81,16 @@ export interface StudentProgress {
   lastAssessmentAt?: Date;
 }
 
+export type StudentStatus = 'incoming' | 'current';
+export type ResidenceType = 'urban' | 'rural';
+export type ParentalIncomeLevel =
+  | 'below_10k'
+  | '10k_20k'
+  | '20k_40k'
+  | '40k_70k'
+  | 'above_70k'
+  | 'prefer_not_to_say';
+
 export interface UserProfile {
   name: string;
   email?: string;
@@ -88,6 +98,19 @@ export interface UserProfile {
   currentSkills: string;
   learningStyle: string;
   experience: string;
+
+  /** Whether the student is entering college or already enrolled (scope: college + incoming college students only) */
+  studentStatus?: StudentStatus;
+  /** SHS strand/track — collected for incoming students, optional/historical for current students */
+  shsStrand?: string;
+  /** General weighted average / GPA, stored as free text to accommodate different grading scales */
+  academicAverage?: string;
+  /** Socio-economic background, per validated Guidance Office/Admissions questionnaire */
+  residenceType?: ResidenceType;
+  parentalIncomeLevel?: ParentalIncomeLevel;
+  /** Expanded, structured career interests (replaces relying on free-text goals alone) */
+  careerInterests?: string[];
+
   selectedPath?: Recommendation;
   quizHistory?: QuizResult[];
   progress?: StudentProgress;

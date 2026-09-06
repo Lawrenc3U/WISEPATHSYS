@@ -515,3 +515,62 @@ export const SAMPLE_PROGRESS_DATA = {
     expectedGraduationDate: new Date('2026-06-30'),
   },
 };
+
+/**
+ * ============================================
+ * PROFILE INTAKE OPTIONS
+ * Scope: college students + incoming college students only
+ * ============================================
+ */
+export const STUDENT_STATUS_OPTIONS: { value: 'incoming' | 'current'; label: string }[] = [
+  { value: 'incoming', label: 'Incoming college student' },
+  { value: 'current', label: 'Current college student' },
+];
+
+export const SHS_STRANDS = [
+  'STEM',
+  'ABM',
+  'HUMSS',
+  'GAS',
+  'TVL',
+  'Arts and Design',
+  'Sports',
+  'N/A',
+];
+
+export const RESIDENCE_TYPE_OPTIONS: { value: 'urban' | 'rural'; label: string }[] = [
+  { value: 'urban', label: 'Urban' },
+  { value: 'rural', label: 'Rural' },
+];
+
+export const PARENTAL_INCOME_OPTIONS: {
+  value:
+    | 'below_10k'
+    | '10k_20k'
+    | '20k_40k'
+    | '40k_70k'
+    | 'above_70k'
+    | 'prefer_not_to_say';
+  label: string;
+}[] = [
+  { value: 'below_10k', label: 'Below ₱10,000' },
+  { value: '10k_20k', label: '₱10,000 – ₱20,000' },
+  { value: '20k_40k', label: '₱20,000 – ₱40,000' },
+  { value: '40k_70k', label: '₱40,000 – ₱70,000' },
+  { value: 'above_70k', label: 'Above ₱70,000' },
+  { value: 'prefer_not_to_say', label: 'Prefer not to say' },
+];
+
+/** Expanded career interest areas (multi-select), broader than the 3 core programs */
+export const CAREER_INTEREST_OPTIONS = [
+  'Hospitality & Tourism',
+  'Information Technology & Computing',
+  'Law Enforcement & Public Safety',
+  'Business & Entrepreneurship',
+  'Healthcare & Wellness',
+  'Education & Teaching',
+  'Engineering & Technical Trades',
+  'Arts, Media & Design',
+  'Government & Public Service',
+  'Science & Research',
+];

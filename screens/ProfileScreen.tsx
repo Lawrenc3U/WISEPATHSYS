@@ -320,6 +320,35 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
               <Text style={styles.profileLabel}>Time Commitment</Text>
               <Text style={styles.profileValue}>{userProfile.experience}</Text>
             </View>
+            {userProfile.shsStrand && (
+              <>
+                <View style={styles.divider} />
+                <View style={styles.profileItem}>
+                  <Text style={styles.profileLabel}>SHS Strand</Text>
+                  <Text style={styles.profileValue}>{userProfile.shsStrand}</Text>
+                </View>
+              </>
+            )}
+            {userProfile.academicAverage ? (
+              <>
+                <View style={styles.divider} />
+                <View style={styles.profileItem}>
+                  <Text style={styles.profileLabel}>General Average</Text>
+                  <Text style={styles.profileValue}>{userProfile.academicAverage}</Text>
+                </View>
+              </>
+            ) : null}
+            {userProfile.careerInterests && userProfile.careerInterests.length > 0 && (
+              <>
+                <View style={styles.divider} />
+                <View style={styles.profileItem}>
+                  <Text style={styles.profileLabel}>Career Interests</Text>
+                  <Text style={styles.profileValue}>
+                    {userProfile.careerInterests.join(', ')}
+                  </Text>
+                </View>
+              </>
+            )}
           </View>
         )}
 
