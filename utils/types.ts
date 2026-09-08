@@ -1,5 +1,15 @@
 export type UserRole = 'student' | 'admin';
 
+export type StudentStatus = 'incoming' | 'current';
+export type ResidenceType = 'urban' | 'rural';
+export type ParentalIncomeLevel =
+  | 'below_10k'
+  | '10k_20k'
+  | '20k_40k'
+  | '40k_70k'
+  | 'above_70k'
+  | 'prefer_not_to_say';
+
 export interface QuizQuestion {
   id: string;
   text: string;
@@ -21,8 +31,6 @@ export interface Course {
   curriculum: string[];
 }
 
-<<<<<<< HEAD
-=======
 /** Short program-specific assessment (separate from the global career quiz) */
 export interface ProgramAssessment {
   id: string;
@@ -41,7 +49,6 @@ export interface ProgramAssessmentCompletion {
   completedAt: Date;
 }
 
->>>>>>> 5f9ea0b26c12317ca925171c136617506373f5cf
 export interface Recommendation {
   id: string;
   title: string;
@@ -89,28 +96,23 @@ export interface StudentProgress {
 export interface UserProfile {
   name: string;
   email?: string;
-<<<<<<< HEAD
-  seniorHighStrand: string;
-  learningGoals: string;
-=======
   learningGoals: string[];
   currentSkills: string;
   learningStyle: string;
   experience: string;
 
-  /** Whether the student is entering college or already enrolled (scope: college + incoming college students only) */
+  /** Whether the student is entering college or already enrolled */
   studentStatus?: StudentStatus;
-  /** SHS strand/track — collected for incoming students, optional/historical for current students */
+  /** SHS strand/track */
   shsStrand?: string;
-  /** General weighted average / GPA, stored as free text to accommodate different grading scales */
+  /** Legacy alias used by some screens */
+  seniorHighStrand?: string;
+  /** General weighted average / GPA */
   academicAverage?: string;
-  /** Socio-economic background, per validated Guidance Office/Admissions questionnaire */
   residenceType?: ResidenceType;
   parentalIncomeLevel?: ParentalIncomeLevel;
-  /** Expanded, structured career interests (replaces relying on free-text goals alone) */
   careerInterests?: string[];
 
->>>>>>> 5f9ea0b26c12317ca925171c136617506373f5cf
   selectedPath?: Recommendation;
   quizHistory?: QuizResult[];
   progress?: StudentProgress;

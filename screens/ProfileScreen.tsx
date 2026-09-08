@@ -251,14 +251,18 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
             <View style={styles.profileItem}>
               <Text style={styles.profileLabel}>Senior High Strand</Text>
               <Text style={styles.profileValue}>
-                {userProfile.seniorHighStrand || 'Not set'}
+                {userProfile.seniorHighStrand ||
+                  userProfile.shsStrand ||
+                  'Not set'}
               </Text>
             </View>
             <View style={styles.divider} />
             <View style={styles.profileItem}>
               <Text style={styles.profileLabel}>Learning Goals</Text>
               <Text style={styles.profileValue}>
-                {userProfile.learningGoals}
+                {Array.isArray(userProfile.learningGoals)
+                  ? userProfile.learningGoals.join(', ') || 'Not set'
+                  : userProfile.learningGoals || 'Not set'}
               </Text>
             </View>
           </View>
@@ -552,8 +556,6 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontWeight: typography.weights.medium,
   },
-<<<<<<< HEAD
-=======
   programAssessmentLegend: {
     fontSize: typography.sizes.xs,
     color: colors.textSecondary,
@@ -593,7 +595,6 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.95)',
     fontWeight: typography.weights.medium,
   },
->>>>>>> 5f9ea0b26c12317ca925171c136617506373f5cf
   historyItem: {
     flexDirection: 'row',
     alignItems: 'center',

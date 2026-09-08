@@ -285,8 +285,6 @@ const styles = StyleSheet.create({
     borderLeftColor: colors.primary,
   },
   careerText: { fontSize: typography.sizes.sm, color: colors.text },
-<<<<<<< HEAD
-=======
   assessmentHint: {
     fontSize: typography.sizes.sm,
     color: colors.textSecondary,
@@ -312,7 +310,6 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.xs,
     color: 'rgba(255,255,255,0.9)',
   },
->>>>>>> 5f9ea0b26c12317ca925171c136617506373f5cf
   infoBox: {
     flexDirection: 'row',
     gap: spacing.md,

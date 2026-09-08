@@ -127,7 +127,11 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
             />
             <StatCard
               label="SHS Strand"
-              value={userProfile.seniorHighStrand || 'Not set'}
+              value={
+                userProfile.seniorHighStrand ||
+                userProfile.shsStrand ||
+                'Not set'
+              }
               icon={<GraduationCap size={24} color={colors.secondary} strokeWidth={1.5} />}
             />
           </View>

@@ -1,4 +1,4 @@
-import { QuizQuestion, Course } from './types';
+import { QuizQuestion, Course, ProgramAssessment } from './types';
 
 /** Admin registration passcode (override via EXPO_PUBLIC_ADMIN_CODE in .env) */
 export const ADMIN_REGISTRATION_CODE =
@@ -242,8 +242,6 @@ export const COURSE_SCORING_WEIGHTS: Record<
 
 export const PROGRAM_COURSE_IDS = ['hospitality', 'it', 'criminal_justice'] as const;
 
-<<<<<<< HEAD
-=======
 /** Per-program assessments — each recommended program has its own set of 5 questions */
 export const PROGRAM_ASSESSMENTS: ProgramAssessment[] = [
   {
@@ -457,7 +455,6 @@ export const getProgramAssessmentsForCourse = (
 ): ProgramAssessment[] =>
   PROGRAM_ASSESSMENTS.filter((a) => a.courseId === courseId);
 
->>>>>>> 5f9ea0b26c12317ca925171c136617506373f5cf
 /**
  * ============================================
  * SAMPLE PROGRESS DATA
@@ -531,8 +528,6 @@ export const SAMPLE_PROGRESS_DATA = {
     expectedGraduationDate: new Date('2026-06-30'),
   },
 };
-<<<<<<< HEAD
-=======
 
 /**
  * ============================================
@@ -603,4 +598,3 @@ export const LEARNING_GOALS_OPTIONS = [
   'Understand industry standards and ethics',
   'Explore personal interests before committing',
 ];
->>>>>>> 5f9ea0b26c12317ca925171c136617506373f5cf
