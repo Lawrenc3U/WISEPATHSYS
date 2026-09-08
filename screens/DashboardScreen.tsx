@@ -19,6 +19,8 @@ import { useAuthStore } from '../stores/authStore';
 import { performSignOut } from '../services/authService';
 import { confirmAction } from '../utils/confirm';
 import { loadCourseProgress } from '../services/progressService';
+import { getBaselineRecommendation } from '../services/aiService';
+import { getAssessmentsForCourse } from '../services/programAssessmentService';
 
 const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const userProfile = useUserStore((state) => state.userProfile);
@@ -36,6 +38,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const selectedCourse =
     allCourses.find((c) => c.id === (selectedCourseId || 'it')) ||
     allCourses[0];
+
+  const baselineCourse = userProfile ? getBaselineRecommendation(userProfile) : null;
+  const hasTakenAssessment = userProfile?.quizHistory && userProfile.quizHistory.length > 0;
 
   const handleStartQuiz = () => {
     navigation.navigate('AssessmentQuiz');
@@ -82,34 +87,34 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
       >
         <AnimatedFadeIn index={0}>
-        <LinearGradient
-          colors={[colors.gradientStart, colors.primaryLight]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.headerGradient}
-        >
-        <View style={styles.header}>
-          <View style={styles.headerRow}>
-            <View style={styles.headerText}>
-              <Text style={styles.headerTitle}>Dashboard</Text>
-              <Text style={styles.headerSubtitle}>
-                {userProfile?.name ? `Welcome back, ${userProfile.name}!` : 'Welcome to WisePath'}
-              </Text>
+          <LinearGradient
+            colors={[colors.gradientStart, colors.primaryLight]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.headerGradient}
+          >
+            <View style={styles.header}>
+              <View style={styles.headerRow}>
+                <View style={styles.headerText}>
+                  <Text style={styles.headerTitle}>Dashboard</Text>
+                  <Text style={styles.headerSubtitle}>
+                    {userProfile?.name ? `Welcome back, ${userProfile.name}!` : 'Welcome to WisePath'}
+                  </Text>
+                </View>
+                <View style={styles.headerActions}>
+                  <TouchableOpacity
+                    style={styles.iconBtn}
+                    onPress={() => navigation.navigate('Profile')}
+                  >
+                    <User size={22} color="#FFFFFF" />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.iconBtn} onPress={handleLogout}>
+                    <LogOut size={22} color="#FFFFFF" />
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
-            <View style={styles.headerActions}>
-              <TouchableOpacity
-                style={styles.iconBtn}
-                onPress={() => navigation.navigate('Profile')}
-              >
-                <User size={22} color="#FFFFFF" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.iconBtn} onPress={handleLogout}>
-                <LogOut size={22} color="#FFFFFF" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-        </LinearGradient>
+          </LinearGradient>
         </AnimatedFadeIn>
 
         {/* Quick Stats */}
@@ -117,7 +122,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
           <View style={styles.statsSection}>
             <StatCard
               label="Learning Goals"
-              value={userProfile.learningGoals || 'Not set'}
+              value={userProfile.learningGoals?.length ? userProfile.learningGoals.join(', ') : 'Not set'}
               icon={<BookOpen size={24} color={colors.primary} strokeWidth={1.5} />}
             />
             <StatCard
@@ -183,7 +188,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
                   style={[
                     styles.courseOptionTitle,
                     selectedCourseId === course.id &&
-                      styles.courseOptionTitleSelected,
+                    styles.courseOptionTitleSelected,
                   ]}
                 >
                   {course.title}
@@ -206,24 +211,52 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
           ))}
         </View>
 
+        {/* Baseline Recommendation / Assessment Prompt */}
+        {!hasTakenAssessment && baselineCourse && (
+          <View style={styles.courseSection}>
+            <Text style={styles.sectionTitle}>Initial Recommendation</Text>
+            <View style={[styles.courseCard, { borderColor: colors.accent }]}>
+              <Text style={styles.courseDescription}>
+                Based on your profile, we recommend exploring the <Text style={{ fontWeight: 'bold' }}>{baselineCourse.title}</Text> program.
+                Take an assessment to confirm your fit!
+              </Text>
+              <PrimaryButton
+                label={`Take Assessment`}
+                onPress={() => {
+                  const assessments = getAssessmentsForCourse(baselineCourse.id);
+                  if (assessments.length > 0) {
+                    navigation.navigate('ProgramAssessment', {
+                      courseId: baselineCourse.id,
+                      assessmentId: assessments[0].id
+                    });
+                  } else {
+                    navigation.navigate('CourseDetail', { courseId: baselineCourse.id });
+                  }
+                }}
+                style={{ marginTop: spacing.md }}
+              />
+            </View>
+          </View>
+        )}
+
         <AnimatedFadeIn index={4}>
-        <View style={styles.actionSection}>
-          <PrimaryButton label="Take Assessment Quiz" onPress={handleStartQuiz} />
-          <PrimaryButton
-            label="View Course Details"
-            onPress={() => navigation.navigate('CourseDetail', { courseId: selectedCourse?.id || 'it' })}
-            variant="outline"
-            style={{ marginTop: spacing.md }}
-          />
-          {userProfile?.selectedPath && (
+          <View style={styles.actionSection}>
+            <PrimaryButton label="Take Career Quiz" onPress={handleStartQuiz} />
             <PrimaryButton
-              label="View Recommendations"
-              onPress={() => navigation.navigate('Recommendations')}
+              label="View Course Details"
+              onPress={() => navigation.navigate('CourseDetail', { courseId: selectedCourse?.id || 'it' })}
               variant="outline"
               style={{ marginTop: spacing.md }}
             />
-          )}
-        </View>
+            {userProfile?.selectedPath && (
+              <PrimaryButton
+                label="View AI Recommendations"
+                onPress={() => navigation.navigate('Recommendations')}
+                variant="outline"
+                style={{ marginTop: spacing.md }}
+              />
+            )}
+          </View>
         </AnimatedFadeIn>
       </ScrollView>
     </ScreenWrapper>
@@ -287,7 +320,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: typography.sizes['2xl'],
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: colors.text,
     marginBottom: spacing.xs,
   },
   headerSubtitle: {
@@ -363,7 +396,7 @@ const styles = StyleSheet.create({
   },
   metricBadge: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.text,
     borderRadius: borderRadius.md,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
@@ -390,7 +423,7 @@ const styles = StyleSheet.create({
   viewProgressButtonText: {
     fontSize: typography.sizes.base,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: colors.text,
     marginRight: spacing.sm,
   },
   courseSelectionSection: {
@@ -449,7 +482,7 @@ const styles = StyleSheet.create({
   actionButtonText: {
     fontSize: typography.sizes.base,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: colors.text,
   },
   actionButtonTextSecondary: {
     fontSize: typography.sizes.base,

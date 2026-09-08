@@ -89,7 +89,7 @@ export const RecommendationItem: React.FC<RecommendationItemProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.background,
+    backgroundcolor: colors.text,
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
     marginBottom: spacing.lg,

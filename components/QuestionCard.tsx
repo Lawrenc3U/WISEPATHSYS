@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
     borderWidth: 2,
     borderColor: colors.border,
-    backgroundColor: colors.background,
+    backgroundcolor: colors.text,
   },
   optionButtonSelected: {
     borderColor: colors.primary,
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
     borderWidth: 2,
     borderColor: colors.border,
-    backgroundColor: colors.background,
+    backgroundcolor: colors.text,
   },
   scaleButtonSelected: {
     borderColor: colors.primary,
@@ -216,6 +216,6 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   scaleTextSelected: {
-    color: colors.background,
+    color: colors.text,
   },
 });

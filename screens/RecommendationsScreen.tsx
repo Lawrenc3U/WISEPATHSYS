@@ -16,7 +16,8 @@ import { useUserStore } from '../stores/userStore';
 import { useCourseStore } from '../stores/courseStore';
 import { SAMPLE_COURSES } from '../utils/constants';
 import { RecommendationsScreenProps } from '../navigation/types';
-import { ChevronRight } from 'lucide-react-native';
+import { ChevronRight, Sparkles } from 'lucide-react-native';
+import { getAIAnalysis } from '../services/aiService';
 
 const RecommendationsScreen: React.FC<RecommendationsScreenProps> = ({
   navigation,
@@ -27,9 +28,33 @@ const RecommendationsScreen: React.FC<RecommendationsScreenProps> = ({
   );
   const setSelectedCourseId = useUserStore((state) => state.setSelectedCourseId);
 
-  // For now, we'll use mock recommendations
-  // In production, this would call OpenAI via the backend endpoint
+  const userProfile = useUserStore((state) => state.userProfile);
+
   const recommendations = currentRecommendations;
+  const latestQuiz = userProfile?.quizHistory?.[userProfile.quizHistory.length - 1];
+
+  const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAnalysis = async () => {
+      if (userProfile && latestQuiz && latestQuiz.courseRankings) {
+        setIsAiLoading(true);
+        try {
+          const analysis = await getAIAnalysis(userProfile, latestQuiz.courseRankings, SAMPLE_COURSES);
+          setAiAnalysis(analysis);
+        } catch (error) {
+          console.error('Failed to fetch AI analysis:', error);
+          setAiAnalysis('Could not load AI analysis at this time.');
+        } finally {
+          setIsAiLoading(false);
+        }
+      } else {
+        setIsAiLoading(false);
+      }
+    };
+    fetchAnalysis();
+  }, [userProfile, latestQuiz]);
 
   const handleCoursePress = (courseId: string) => {
     setSelectedCourseId(courseId);
@@ -74,7 +99,22 @@ const RecommendationsScreen: React.FC<RecommendationsScreenProps> = ({
         </View>
         </AnimatedFadeIn>
 
-        {recommendations.map((rec, index) => (
+        {/* AI Analysis Section */}
+        <AnimatedFadeIn index={0.5}>
+          <View style={styles.aiSection}>
+            <View style={styles.aiHeaderRow}>
+              <Sparkles size={20} color={colors.primary} />
+              <Text style={styles.aiTitle}>AI Guidance Counselor</Text>
+            </View>
+            {isAiLoading ? (
+              <LoadingSpinner message="Analyzing your profile..." />
+            ) : (
+              <Text style={styles.aiText}>{aiAnalysis}</Text>
+            )}
+          </View>
+        </AnimatedFadeIn>
+
+        {recommendations.slice(0, 3).map((rec, index) => (
           <AnimatedFadeIn key={rec.id} index={index + 1}>
             <View style={styles.topRecommendation}>
               <RecommendationItem
@@ -163,7 +203,7 @@ const StatPill: React.FC<StatPillProps> = ({ label, value }) => (
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.text,
   },
   contentContainer: {
     paddingHorizontal: spacing.lg,
@@ -183,6 +223,30 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.base,
     color: colors.textSecondary,
     lineHeight: 24,
+  },
+  aiSection: {
+    backgroundColor: '#F0F9FF',
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    marginBottom: spacing.xl,
+    borderWidth: 1,
+    borderColor: '#BAE6FD',
+  },
+  aiHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+    gap: spacing.sm,
+  },
+  aiTitle: {
+    fontSize: typography.sizes.base,
+    fontWeight: 'bold',
+    color: '#0284C7',
+  },
+  aiText: {
+    fontSize: typography.sizes.sm,
+    color: colors.text,
+    lineHeight: 22,
   },
   topRecommendation: {
     marginBottom: spacing.xl,
@@ -243,7 +307,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   statPill: {
-    backgroundColor: colors.background,
+    backgroundColor: colors.text,
     borderRadius: borderRadius.full,
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.md,
@@ -266,7 +330,7 @@ const styles = StyleSheet.create({
   enrollButtonText: {
     fontSize: typography.sizes.base,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: colors.text,
   },
   backButton: {
     backgroundColor: colors.surface,

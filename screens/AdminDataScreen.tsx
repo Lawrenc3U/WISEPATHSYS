@@ -83,7 +83,7 @@ const AdminDataScreen: React.FC<AdminDataScreenProps> = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundcolor: colors.text },
   content: { padding: spacing.lg },
   banner: {
     backgroundColor: '#FFF8E6',

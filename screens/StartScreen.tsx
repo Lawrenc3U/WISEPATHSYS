@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: typography.sizes['3xl'],
     fontWeight: typography.weights.bold,
-    color: '#FFFFFF',
+    color: colors.text,
   },
   heroSubtitle: {
     fontSize: typography.sizes.base,
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   },
   featureCard: {
     flexDirection: 'row',
-    backgroundColor: colors.background,
+    backgroundcolor: colors.text,
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
     marginBottom: spacing.md,

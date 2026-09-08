@@ -86,7 +86,7 @@ const RecommendationsScreen: React.FC<RecommendationsScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundcolor: colors.text,
   },
   contentContainer: {
     paddingHorizontal: spacing.lg,

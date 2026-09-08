@@ -21,7 +21,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const screenOptions = {
   headerStyle: {
-    backgroundColor: colors.background,
+    backgroundcolor: colors.text,
   },
   headerTintColor: colors.text,
   headerTitleStyle: {
@@ -29,7 +29,7 @@ const screenOptions = {
   },
   headerShadowVisible: false,
   contentStyle: {
-    backgroundColor: colors.background,
+    backgroundcolor: colors.text,
   },
 };
 

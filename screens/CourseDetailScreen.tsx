@@ -135,15 +135,22 @@ const CourseDetailScreen = ({
 
         <AnimatedFadeIn index={2}>
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Curriculum</Text>
-            {course.curriculum.map((item, index) => (
-              <View key={item} style={styles.curriculumRow}>
-                <View style={styles.curriculumNum}>
-                  <Text style={styles.curriculumNumText}>{index + 1}</Text>
+            <Text style={styles.sectionTitle}>Curriculum Checklist</Text>
+            {course.curriculum.map((item, index) => {
+              const isCompleted = userProfile?.progress?.courseId === courseId && userProfile?.progress?.completedSubjects?.includes(item);
+              return (
+                <View key={item} style={styles.curriculumRow}>
+                  <View style={[styles.curriculumIcon, isCompleted && { backgroundColor: colors.success }]}>
+                    {isCompleted ? (
+                      <CheckCircle size={16} color="#FFF" />
+                    ) : (
+                      <Text style={styles.curriculumNumText}>{index + 1}</Text>
+                    )}
+                  </View>
+                  <Text style={[styles.curriculumText, isCompleted && { textDecorationLine: 'line-through', color: colors.textSecondary }]}>{item}</Text>
                 </View>
-                <Text style={styles.curriculumText}>{item}</Text>
-              </View>
-            ))}
+              );
+            })}
           </View>
         </AnimatedFadeIn>
 
@@ -204,7 +211,7 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: typography.sizes['2xl'],
     fontWeight: typography.weights.bold,
-    color: '#FFFFFF',
+    color: colors.text,
     marginBottom: spacing.sm,
   },
   heroDesc: {
@@ -254,11 +261,11 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     marginBottom: spacing.md,
   },
-  curriculumNum: {
+  curriculumIcon: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -278,6 +285,34 @@ const styles = StyleSheet.create({
     borderLeftColor: colors.primary,
   },
   careerText: { fontSize: typography.sizes.sm, color: colors.text },
+<<<<<<< HEAD
+=======
+  assessmentHint: {
+    fontSize: typography.sizes.sm,
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
+    lineHeight: 20,
+  },
+  assessmentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.sm,
+  },
+  assessmentRowContent: { flex: 1, marginRight: spacing.md },
+  assessmentTitle: {
+    fontSize: typography.sizes.base,
+    fontWeight: typography.weights.bold,
+    color: colors.text,
+    marginBottom: spacing.xs,
+  },
+  assessmentStatus: {
+    fontSize: typography.sizes.xs,
+    color: 'rgba(255,255,255,0.9)',
+  },
+>>>>>>> 5f9ea0b26c12317ca925171c136617506373f5cf
   infoBox: {
     flexDirection: 'row',
     gap: spacing.md,

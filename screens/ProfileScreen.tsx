@@ -422,7 +422,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarText: {
-    color: colors.background,
+    color: colors.text,
     fontSize: typography.sizes['2xl'],
     fontWeight: typography.weights.bold,
   },
@@ -543,7 +543,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   checkmarkText: {
-    color: colors.background,
+    color: colors.text,
     fontWeight: typography.weights.bold,
   },
   strengthText: {
@@ -552,6 +552,48 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontWeight: typography.weights.medium,
   },
+<<<<<<< HEAD
+=======
+  programAssessmentLegend: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+    marginTop: -spacing.md,
+    marginBottom: spacing.lg,
+    lineHeight: 18,
+  },
+  legendDot: { fontWeight: typography.weights.bold },
+  programGroup: {
+    marginBottom: spacing.lg,
+    gap: spacing.sm,
+  },
+  programGroupTitle: {
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.bold,
+    color: colors.text,
+    marginBottom: spacing.xs,
+  },
+  programAssessmentChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.xs,
+  },
+  programAssessmentChipText: {
+    flex: 1,
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.semibold,
+    color: colors.text,
+    marginRight: spacing.md,
+  },
+  programAssessmentChipStatus: {
+    fontSize: typography.sizes.xs,
+    color: 'rgba(255,255,255,0.95)',
+    fontWeight: typography.weights.medium,
+  },
+>>>>>>> 5f9ea0b26c12317ca925171c136617506373f5cf
   historyItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -598,7 +640,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   retakeButtonText: {
-    color: colors.background,
+    color: colors.text,
     fontWeight: typography.weights.bold,
     fontSize: typography.sizes.base,
   },

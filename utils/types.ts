@@ -21,6 +21,27 @@ export interface Course {
   curriculum: string[];
 }
 
+<<<<<<< HEAD
+=======
+/** Short program-specific assessment (separate from the global career quiz) */
+export interface ProgramAssessment {
+  id: string;
+  courseId: string;
+  title: string;
+  description: string;
+  questions: QuizQuestion[];
+}
+
+export interface ProgramAssessmentCompletion {
+  userId: string;
+  courseId: string;
+  assessmentId: string;
+  score?: number;
+  isFitted?: boolean;
+  completedAt: Date;
+}
+
+>>>>>>> 5f9ea0b26c12317ca925171c136617506373f5cf
 export interface Recommendation {
   id: string;
   title: string;
@@ -68,8 +89,28 @@ export interface StudentProgress {
 export interface UserProfile {
   name: string;
   email?: string;
+<<<<<<< HEAD
   seniorHighStrand: string;
   learningGoals: string;
+=======
+  learningGoals: string[];
+  currentSkills: string;
+  learningStyle: string;
+  experience: string;
+
+  /** Whether the student is entering college or already enrolled (scope: college + incoming college students only) */
+  studentStatus?: StudentStatus;
+  /** SHS strand/track — collected for incoming students, optional/historical for current students */
+  shsStrand?: string;
+  /** General weighted average / GPA, stored as free text to accommodate different grading scales */
+  academicAverage?: string;
+  /** Socio-economic background, per validated Guidance Office/Admissions questionnaire */
+  residenceType?: ResidenceType;
+  parentalIncomeLevel?: ParentalIncomeLevel;
+  /** Expanded, structured career interests (replaces relying on free-text goals alone) */
+  careerInterests?: string[];
+
+>>>>>>> 5f9ea0b26c12317ca925171c136617506373f5cf
   selectedPath?: Recommendation;
   quizHistory?: QuizResult[];
   progress?: StudentProgress;
