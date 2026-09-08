@@ -9,7 +9,11 @@ import {
   orderBy,
   serverTimestamp,
 } from 'firebase/firestore';
-import { getFirebaseDb, isFirebaseConfigured } from './firebase';
+import {
+  getFirebaseDb,
+  isFirebaseConfigured,
+  sanitizeForFirestore,
+} from './firebase';
 import { QuizResult, Recommendation } from '../utils/types';
 
 export const saveAssessmentResult = async (
@@ -19,14 +23,17 @@ export const saveAssessmentResult = async (
   if (!isFirebaseConfigured()) return undefined;
 
   const db = getFirebaseDb()!;
-  const ref = await addDoc(collection(db, 'assessments'), {
+  const assessment = sanitizeForFirestore({
     userId,
     quizAnswers: result.quizAnswers,
     strengths: result.strengths,
     recommendedPaths: result.recommendedPaths,
-    courseRankings: result.courseRankings ?? null,
+    courseRankings: result.courseRankings,
     bestCourseId: result.bestCourseId,
     completedAt: result.completedAt,
+  });
+  const ref = await addDoc(collection(db, 'assessments'), {
+    ...assessment,
     savedAt: serverTimestamp(),
   });
   return ref.id;

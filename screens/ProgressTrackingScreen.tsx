@@ -6,7 +6,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { colors, spacing, borderRadius, typography } from '../utils/theme';
+import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
 import { ProgressScreenProps } from '../navigation/types';
 import { useUserStore } from '../stores/userStore';
 import { useAuthStore } from '../stores/authStore';
@@ -50,7 +50,7 @@ const ProgressTrackingScreen: React.FC<ProgressScreenProps> = ({ route }) => {
     return (
       <ScreenWrapper>
         <View style={styles.loading}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={colors.highlight} />
           <Text style={styles.loadingText}>Loading your progress...</Text>
         </View>
       </ScreenWrapper>
@@ -114,7 +114,7 @@ const ProgressTrackingScreen: React.FC<ProgressScreenProps> = ({ route }) => {
         <AnimatedFadeIn index={2}>
           <View style={styles.metricsSection}>
             <MetricCard
-              icon={<BookOpen size={28} color={colors.primary} />}
+              icon={<BookOpen size={28} color={colors.highlight} />}
               label="Year Level"
               value={`Year ${progress.currentYearLevel}`}
               subtext="4-year program"
@@ -269,39 +269,45 @@ const styles = StyleSheet.create({
   headerSubtitle: { fontSize: typography.sizes.base, color: colors.textSecondary },
   syncNote: {
     fontSize: typography.sizes.xs,
-    color: colors.primary,
+    color: colors.highlight,
     marginTop: spacing.sm,
   },
   progressCard: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
+    ...shadows.sm,
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: borderRadius.xl,
     padding: spacing.lg,
     marginBottom: spacing.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(149, 189, 215, 0.4)',
     borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
+    borderLeftColor: colors.highlight,
   },
   progressLabel: { fontSize: typography.sizes.sm, color: colors.textSecondary },
   progressValue: {
     fontSize: typography.sizes['2xl'],
     fontWeight: typography.weights.bold,
-    color: colors.primary,
+    color: colors.highlight,
     marginVertical: spacing.sm,
   },
   progressBarContainer: {
     height: 12,
-    backgroundColor: colors.border,
+    backgroundColor: colors.highlightSoft,
     borderRadius: borderRadius.full,
     overflow: 'hidden',
   },
-  progressBar: { height: '100%', backgroundColor: colors.primary },
+  progressBar: { height: '100%', backgroundColor: colors.highlight },
   metricsSection: { marginBottom: spacing.xl },
   metricCard: {
+    ...shadows.sm,
     flexDirection: 'row',
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: borderRadius.xl,
     padding: spacing.lg,
     marginBottom: spacing.md,
     gap: spacing.md,
+    borderWidth: 1,
+    borderColor: 'rgba(149, 189, 215, 0.35)',
   },
   metricContent: { flex: 1 },
   metricLabel: { fontSize: typography.sizes.xs, color: colors.textSecondary },
@@ -312,12 +318,15 @@ const styles = StyleSheet.create({
   },
   metricSubtext: { fontSize: typography.sizes.xs, color: colors.textSecondary },
   graduationCard: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
+    ...shadows.sm,
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: borderRadius.xl,
     padding: spacing.lg,
     marginBottom: spacing.xl,
     borderLeftWidth: 4,
     gap: spacing.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(149, 189, 215, 0.35)',
   },
   graduationTitle: {
     fontSize: typography.sizes.lg,
@@ -326,10 +335,13 @@ const styles = StyleSheet.create({
   },
   graduationDate: { fontSize: typography.sizes.sm, color: colors.textSecondary },
   subjectCategory: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
+    ...shadows.sm,
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: borderRadius.xl,
     padding: spacing.lg,
     marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: 'rgba(149, 189, 215, 0.35)',
   },
   subjectCategoryHeader: {
     flexDirection: 'row',
@@ -338,14 +350,14 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     paddingBottom: spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: 'rgba(149, 189, 215, 0.35)',
   },
   subjectCategoryTitle: {
     flex: 1,
     fontWeight: typography.weights.bold,
     color: colors.text,
   },
-  subjectCount: { fontWeight: typography.weights.bold, color: colors.primary },
+  subjectCount: { fontWeight: typography.weights.bold, color: colors.highlight },
   subjectItem: {
     fontSize: typography.sizes.sm,
     color: colors.text,

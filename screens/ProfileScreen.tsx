@@ -4,7 +4,6 @@ import {
   ScrollView,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   Alert,
   ActivityIndicator,
@@ -25,6 +24,8 @@ import {
 import { ProfileScreenProps } from '../navigation/types';
 import { Award, Zap, Clock, Lightbulb, Trash2 } from 'lucide-react-native';
 import { QuizResult } from '../utils/types';
+import { ScreenWrapper } from '../components/ScreenWrapper';
+import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
 
 const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const userProfile = useUserStore((state) => state.userProfile);
@@ -223,12 +224,12 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
     );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ScreenWrapper gradient>
       <ScrollView
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
+        <AnimatedFadeIn index={0} style={styles.header}>
           <View style={styles.avatarPlaceholder}>
             <Text style={styles.avatarText}>
               {(userProfile?.name || 'U').charAt(0).toUpperCase()}
@@ -240,12 +241,12 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
               {userProfile?.name || 'Learner'}
             </Text>
           </View>
-        </View>
+        </AnimatedFadeIn>
 
         {userProfile && (
           <View style={[styles.card, shadows.md]}>
             <View style={styles.cardHeader}>
-              <Lightbulb size={24} color={colors.primary} />
+              <Lightbulb size={24} color={colors.highlight} />
               <Text style={styles.cardTitle}>Your Learning Profile</Text>
             </View>
             <View style={styles.profileItem}>
@@ -271,7 +272,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
         {userProfile?.selectedPath && (
           <View style={[styles.card, shadows.md]}>
             <View style={styles.cardHeader}>
-              <Award size={24} color={colors.primary} />
+              <Award size={24} color={colors.highlight} />
               <Text style={styles.cardTitle}>Your Learning Path</Text>
             </View>
             <Text style={styles.selectedPathTitle}>
@@ -282,13 +283,13 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
             </Text>
             <View style={styles.pathStats}>
               <View style={styles.pathStatItem}>
-                <Clock size={16} color={colors.primary} />
+                <Clock size={16} color={colors.highlight} />
                 <Text style={styles.pathStatText}>
                   {userProfile.selectedPath.estimatedDuration}
                 </Text>
               </View>
               <View style={styles.pathStatItem}>
-                <Zap size={16} color={colors.primary} />
+                <Zap size={16} color={colors.highlight} />
                 <Text style={styles.pathStatText}>
                   {userProfile.selectedPath.courses.length} Courses
                 </Text>
@@ -300,7 +301,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
         {latestResult && latestResult.strengths.length > 0 && (
           <View style={[styles.card, shadows.md]}>
             <View style={styles.cardHeader}>
-              <Zap size={24} color={colors.primary} />
+              <Zap size={24} color={colors.highlight} />
               <Text style={styles.cardTitle}>Your Strengths</Text>
             </View>
             <Text style={styles.strengthsHint}>
@@ -323,7 +324,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           <View style={[styles.card, shadows.md]}>
             <View style={styles.historyCardHeader}>
               <View style={styles.historyTitleRow}>
-                <Clock size={24} color={colors.primary} />
+                <Clock size={24} color={colors.highlight} />
                 <Text style={styles.cardTitle}>Assessment History</Text>
               </View>
               <TouchableOpacity
@@ -398,15 +399,11 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           <Text style={styles.logoutButtonText}>Sign Out</Text>
         </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
   contentContainer: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
@@ -421,12 +418,12 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.highlight,
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarText: {
-    color: colors.text,
+    color: '#FFFFFF',
     fontSize: typography.sizes['2xl'],
     fontWeight: typography.weights.bold,
   },
@@ -445,12 +442,12 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   card: {
-    backgroundColor: colors.background,
-    borderRadius: borderRadius.lg,
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: borderRadius.xl,
     padding: spacing.lg,
     marginBottom: spacing.lg,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: 'rgba(149, 189, 215, 0.4)',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -633,7 +630,7 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
   },
   retakeButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.highlight,
     paddingVertical: spacing.lg,
     borderRadius: borderRadius.lg,
     alignItems: 'center',
@@ -641,7 +638,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   retakeButtonText: {
-    color: colors.text,
+    color: '#FFFFFF',
     fontWeight: typography.weights.bold,
     fontSize: typography.sizes.base,
   },

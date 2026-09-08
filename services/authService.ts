@@ -11,7 +11,12 @@ import {
   setDoc,
   serverTimestamp,
 } from 'firebase/firestore';
-import { getFirebaseAuth, getFirebaseDb, isFirebaseConfigured } from './firebase';
+import {
+  getFirebaseAuth,
+  getFirebaseDb,
+  isFirebaseConfigured,
+  sanitizeForFirestore,
+} from './firebase';
 import { UserAccount, UserProfile, UserRole } from '../utils/types';
 import { ADMIN_REGISTRATION_CODE } from '../utils/constants';
 
@@ -177,11 +182,14 @@ export const saveUserProfile = async (
 ): Promise<void> => {
   if (!isFirebaseConfigured()) return;
 
+  // Profile history and recommendations contain nested optional fields.
+  const cleanProfile = sanitizeForFirestore(profile);
+
   const db = getFirebaseDb()!;
   await setDoc(
     doc(db, USERS_COLLECTION, uid),
     {
-      profile,
+      profile: cleanProfile,
       profileComplete: true,
       activeCourseId: profile.selectedPath?.courses[0]?.id || null,
       updatedAt: serverTimestamp(),

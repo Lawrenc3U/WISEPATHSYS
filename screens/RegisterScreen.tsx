@@ -4,14 +4,17 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Alert,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { colors, spacing, borderRadius, typography } from '../utils/theme';
+import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
 import { AuthTextInput } from '../components/AuthTextInput';
+import { ScreenWrapper } from '../components/ScreenWrapper';
+import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
+import { PrimaryButton } from '../components/PrimaryButton';
+import { UserPlus } from 'lucide-react-native';
 import { registerWithEmail, getFirebaseAuthErrorMessage } from '../services/authService';
 import { useAuthStore } from '../stores/authStore';
 import { RegisterScreenProps } from '../navigation/types';
@@ -57,91 +60,125 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ScreenWrapper gradient>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Text style={styles.title}>Create account</Text>
-          <Text style={styles.subtitle}>
-            Register as a student or administrator
-          </Text>
+          <AnimatedFadeIn index={0}>
+            <View style={[styles.iconBadge, shadows.sm]}>
+              <UserPlus size={30} color={colors.highlight} />
+            </View>
+            <Text style={styles.eyebrow}>Join WisePath</Text>
+            <Text style={styles.title}>Create account</Text>
+            <Text style={styles.subtitle}>
+              Register as a student or administrator
+            </Text>
+          </AnimatedFadeIn>
 
-          <AuthTextInput
-            label="Email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            placeholder="you@school.edu"
-          />
-          <AuthTextInput
-            label="Password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            placeholder="At least 6 characters"
-          />
-          <AuthTextInput
-            label="Confirm password"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry
-          />
+          <AnimatedFadeIn index={1}>
+            <View style={[styles.formCard, shadows.sm]}>
+              <AuthTextInput
+                label="Email"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                placeholder="you@school.edu"
+              />
+              <AuthTextInput
+                label="Password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                placeholder="At least 6 characters"
+              />
+              <AuthTextInput
+                label="Confirm password"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry
+              />
 
-          <TouchableOpacity
-            style={styles.roleToggle}
-            onPress={() => setIsAdmin(!isAdmin)}
-          >
-            <View style={[styles.checkbox, isAdmin && styles.checkboxOn]} />
-            <Text style={styles.roleText}>Register as administrator</Text>
-          </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.roleToggle}
+                onPress={() => setIsAdmin(!isAdmin)}
+              >
+                <View style={[styles.checkbox, isAdmin && styles.checkboxOn]} />
+                <Text style={styles.roleText}>Register as administrator</Text>
+              </TouchableOpacity>
 
-          {isAdmin && (
-            <AuthTextInput
-              label="Admin registration code"
-              value={adminCode}
-              onChangeText={setAdminCode}
-              secureTextEntry
-              placeholder="Enter admin code"
+              {isAdmin && (
+                <AuthTextInput
+                  label="Admin registration code"
+                  value={adminCode}
+                  onChangeText={setAdminCode}
+                  secureTextEntry
+                  placeholder="Enter admin code"
+                />
+              )}
+            </View>
+          </AnimatedFadeIn>
+
+          <AnimatedFadeIn index={2}>
+            <PrimaryButton
+              label="Create Account"
+              onPress={handleRegister}
+              loading={loading}
             />
-          )}
-
-          <TouchableOpacity
-            style={[styles.primaryBtn, loading && styles.disabled]}
-            onPress={handleRegister}
-            disabled={loading}
-          >
-            <Text style={styles.primaryBtnText}>
-              {loading ? 'Creating account...' : 'Create Account'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.link}>
-              Already have an account? <Text style={styles.linkBold}>Sign in</Text>
-            </Text>
-          </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+              <Text style={styles.link}>
+                Already have an account? <Text style={styles.linkBold}>Sign in</Text>
+              </Text>
+            </TouchableOpacity>
+          </AnimatedFadeIn>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundcolor: colors.text },
   flex: { flex: 1 },
-  content: { padding: spacing.xl },
+  content: { padding: spacing.xl, paddingBottom: spacing['3xl'] },
+  iconBadge: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.surfaceElevated,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    marginBottom: spacing.md,
+  },
+  eyebrow: {
+    textAlign: 'center',
+    color: colors.highlight,
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.bold,
+    textTransform: 'uppercase',
+    letterSpacing: 0.7,
+  },
   title: {
     fontSize: typography.sizes['2xl'],
     fontWeight: typography.weights.bold,
     color: colors.text,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: typography.sizes.base,
     color: colors.textSecondary,
     marginTop: spacing.sm,
     marginBottom: spacing.xl,
+    textAlign: 'center',
+  },
+  formCard: {
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: borderRadius.xl,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(149, 189, 215, 0.35)',
   },
   roleToggle: {
     flexDirection: 'row',
@@ -156,27 +193,18 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.border,
   },
-  checkboxOn: { backgroundColor: colors.primary, borderColor: colors.primary },
+  checkboxOn: {
+    backgroundColor: colors.highlight,
+    borderColor: colors.highlight,
+  },
   roleText: { fontSize: typography.sizes.sm, color: colors.text },
-  primaryBtn: {
-    backgroundColor: colors.primary,
-    borderRadius: borderRadius.lg,
-    paddingVertical: spacing.lg,
-    alignItems: 'center',
-    marginTop: spacing.md,
-  },
-  primaryBtnText: {
-    color: colors.text,
-    fontWeight: typography.weights.bold,
-  },
-  disabled: { opacity: 0.6 },
   link: {
     textAlign: 'center',
     marginTop: spacing.xl,
     color: colors.textSecondary,
     fontSize: typography.sizes.sm,
   },
-  linkBold: { color: colors.primary, fontWeight: typography.weights.bold },
+  linkBold: { color: colors.highlight, fontWeight: typography.weights.bold },
 });
 
 export default RegisterScreen;

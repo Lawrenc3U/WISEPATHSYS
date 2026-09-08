@@ -67,7 +67,7 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'outline' ? colors.primary : '#FFF'} />
+        <ActivityIndicator color={variant === 'outline' ? colors.highlight : '#FFF'} />
       ) : (
         <>
           {icon}
@@ -97,8 +97,8 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
   },
   primary: {
-    backgroundColor: colors.primary,
-    shadowColor: colors.primary,
+    backgroundColor: colors.highlight,
+    shadowColor: colors.highlight,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.35,
     shadowRadius: 12,
@@ -110,14 +110,14 @@ const styles = StyleSheet.create({
   outline: {
     backgroundColor: 'transparent',
     borderWidth: 2,
-    borderColor: colors.primary,
+    borderColor: colors.highlight,
   },
   disabled: { opacity: 0.55 },
   label: {
-    color: colors.text,
+    color: '#FFFFFF',
     fontSize: typography.sizes.base,
     fontWeight: typography.weights.bold,
   },
-  labelOutline: { color: colors.primary },
+  labelOutline: { color: colors.highlight },
   labelSecondary: { color: colors.text },
 });

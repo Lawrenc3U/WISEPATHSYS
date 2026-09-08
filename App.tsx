@@ -1,5 +1,5 @@
 import React from 'react';
-import { SafeAreaView, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import RootNavigator from './navigation/RootNavigator';
@@ -9,10 +9,8 @@ import { colors } from './utils/theme';
 export default function App() {
   return (
     <GestureHandlerRootView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
-        <RootNavigator />
-      </SafeAreaView>
+      <StatusBar style="dark" backgroundColor={colors.background} />
+      <RootNavigator />
     </GestureHandlerRootView>
   );
 }
@@ -20,9 +18,5 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-    backgroundcolor: colors.text,
   },
 });

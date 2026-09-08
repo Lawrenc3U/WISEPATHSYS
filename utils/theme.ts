@@ -5,6 +5,9 @@ export const colors = {
   primaryLight: '#FFFFFF', // Lighter than primary? Primary is already very light.
   secondary: '#FFFCE1',
   accent: '#95BDD7',
+  /** Stronger blue for selected states / CTAs (primary matches page background) */
+  highlight: '#3D7A9E',
+  highlightSoft: '#E8F1F7',
   background: '#E3F2FD',
   surface: '#FFFCE1',
   surfaceElevated: '#FFFFFF',

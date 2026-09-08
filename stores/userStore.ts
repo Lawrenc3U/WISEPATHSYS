@@ -20,7 +20,7 @@ interface UserStore {
   clearQuizHistory: () => void;
   clearQuizAnswers: () => void;
   setSelectedPath: (recommendation: Recommendation) => void;
-  setStudentProgress: (progress: StudentProgress) => void;
+  setStudentProgress: (progress: StudentProgress | null) => void;
   setProgressByCourse: (map: Record<string, StudentProgress>) => void;
   setCourseProgress: (courseId: string, progress: StudentProgress) => void;
   setSelectedCourseId: (courseId: string) => void;
@@ -103,7 +103,7 @@ export const useUserStore = create<UserStore>((set) => ({
         : null,
     })),
 
-  setStudentProgress: (progress: StudentProgress) =>
+  setStudentProgress: (progress: StudentProgress | null) =>
     set({ studentProgress: progress }),
 
   setProgressByCourse: (map: Record<string, StudentProgress>) =>

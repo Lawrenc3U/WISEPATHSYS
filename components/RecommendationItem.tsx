@@ -7,60 +7,79 @@ import {
 } from 'react-native';
 import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
 import { Recommendation } from '../utils/types';
-import { ArrowRight, BookOpen } from 'lucide-react-native';
+import { ArrowRight, BookOpen, Medal } from 'lucide-react-native';
 
 interface RecommendationItemProps {
   recommendation: Recommendation;
   onPress: () => void;
+  rank?: number;
 }
 
 export const RecommendationItem: React.FC<RecommendationItemProps> = ({
   recommendation,
   onPress,
+  rank,
 }) => {
+  const isTop = rank === 1;
+
   return (
     <TouchableOpacity
-      style={[styles.container, shadows.md]}
+      style={[
+        styles.container,
+        shadows.sm,
+        isTop && styles.containerTop,
+      ]}
       onPress={onPress}
-      activeOpacity={0.8}
+      activeOpacity={0.85}
     >
-      {/* Header with gradient accent */}
       <View style={styles.header}>
-        <View style={styles.iconSection}>
-          <View style={styles.iconBackground}>
-            <BookOpen size={24} color={colors.primary} />
-          </View>
+        <View style={[styles.iconBackground, isTop && styles.iconBackgroundTop]}>
+          {isTop ? (
+            <Medal size={22} color="#FFFFFF" />
+          ) : (
+            <BookOpen size={22} color={colors.highlight} />
+          )}
         </View>
         <View style={styles.headerContent}>
+          {rank != null ? (
+            <Text style={[styles.rankLabel, isTop && styles.rankLabelTop]}>
+              #{rank} match
+            </Text>
+          ) : null}
           <Text style={styles.title} numberOfLines={2}>
             {recommendation.title}
           </Text>
           <View style={styles.badgesRow}>
             {recommendation.matchPercent != null && (
-              <View style={[styles.badge, { backgroundColor: colors.primary + '18' }]}>
-                <Text style={[styles.badgeText, { color: colors.primary }]}>
+              <View style={[styles.badge, isTop && styles.badgeTop]}>
+                <Text style={[styles.badgeText, isTop && styles.badgeTextTop]}>
                   {recommendation.matchPercent}% fit
                 </Text>
               </View>
             )}
-            <View style={[styles.badge, { backgroundColor: colors.surface }]}>
-              <Text style={[styles.badgeText, { color: colors.textSecondary }]}>
+            <View style={styles.badgeMuted}>
+              <Text style={styles.badgeMutedText}>
                 {recommendation.estimatedDuration}
               </Text>
             </View>
+            {recommendation.courses[0]?.estimatedTuitionPerTerm ? (
+              <View style={styles.badgeMuted}>
+                <Text style={styles.badgeMutedText}>
+                  {recommendation.courses[0].estimatedTuitionPerTerm}/term
+                </Text>
+              </View>
+            ) : null}
           </View>
         </View>
       </View>
 
-      {/* Description */}
-      <Text style={styles.description} numberOfLines={2}>
+      <Text style={styles.description} numberOfLines={3}>
         {recommendation.description}
       </Text>
 
-      {/* Career paths preview */}
       {recommendation.careerApplications.length > 0 && (
         <View style={styles.careerSection}>
-          <Text style={styles.sectionLabel}>Career Paths</Text>
+          <Text style={styles.sectionLabel}>Career paths</Text>
           <View style={styles.careerTags}>
             {recommendation.careerApplications.slice(0, 2).map((career, index) => (
               <View key={index} style={styles.careerTag}>
@@ -76,12 +95,14 @@ export const RecommendationItem: React.FC<RecommendationItemProps> = ({
         </View>
       )}
 
-      {/* CTA Footer */}
       <View style={styles.footer}>
         <Text style={styles.courseCount}>
-          {recommendation.courses.length} courses included
+          {recommendation.courses[0]?.title || 'View program'}
         </Text>
-        <ArrowRight size={20} color={colors.primary} />
+        <View style={styles.footerCta}>
+          <Text style={styles.footerCtaText}>Details</Text>
+          <ArrowRight size={18} color={colors.highlight} />
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -89,33 +110,50 @@ export const RecommendationItem: React.FC<RecommendationItemProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundcolor: colors.text,
-    borderRadius: borderRadius.lg,
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: borderRadius.xl,
     padding: spacing.lg,
-    marginBottom: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
+    marginBottom: spacing.md,
+    borderWidth: 1.5,
+    borderColor: 'rgba(149, 189, 215, 0.4)',
+  },
+  containerTop: {
+    borderColor: colors.highlight,
+    backgroundColor: colors.highlightSoft,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: spacing.md,
-    marginBottom: spacing.lg,
-  },
-  iconSection: {
-    marginTop: spacing.xs,
+    marginBottom: spacing.md,
   },
   iconBackground: {
     width: 48,
     height: 48,
     borderRadius: borderRadius.lg,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceElevated,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(149, 189, 215, 0.45)',
+  },
+  iconBackgroundTop: {
+    backgroundColor: colors.highlight,
+    borderColor: colors.highlight,
   },
   headerContent: {
     flex: 1,
-    gap: spacing.sm,
+    gap: spacing.xs,
+  },
+  rankLabel: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.bold,
+    color: colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  rankLabelTop: {
+    color: colors.highlight,
   },
   title: {
     fontSize: typography.sizes.lg,
@@ -124,25 +162,48 @@ const styles = StyleSheet.create({
   },
   badgesRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.sm,
+    marginTop: 2,
   },
   badge: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.highlightSoft,
+  },
+  badgeTop: {
+    backgroundColor: colors.highlight,
   },
   badgeText: {
     fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.bold,
+    color: colors.highlight,
+  },
+  badgeTextTop: {
+    color: '#FFFFFF',
+  },
+  badgeMuted: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: 'rgba(149, 189, 215, 0.45)',
+  },
+  badgeMutedText: {
+    fontSize: typography.sizes.xs,
     fontWeight: typography.weights.semibold,
+    color: colors.textSecondary,
   },
   description: {
     fontSize: typography.sizes.sm,
     color: colors.textSecondary,
     lineHeight: 20,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   careerSection: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   sectionLabel: {
     fontSize: typography.sizes.xs,
@@ -157,34 +218,48 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   careerTag: {
-    backgroundColor: '#EDE9FE',
+    backgroundColor: colors.surfaceElevated,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: 'rgba(149, 189, 215, 0.45)',
   },
   careerTagText: {
     fontSize: typography.sizes.xs,
-    color: colors.primary,
+    color: colors.highlight,
     fontWeight: typography.weights.medium,
   },
   moreCareerText: {
     fontSize: typography.sizes.xs,
     color: colors.textSecondary,
     fontWeight: typography.weights.medium,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.sm,
     paddingVertical: spacing.sm,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: spacing.lg,
+    paddingTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: 'rgba(149, 189, 215, 0.35)',
   },
   courseCount: {
+    flex: 1,
     fontSize: typography.sizes.sm,
     fontWeight: typography.weights.medium,
     color: colors.textSecondary,
+    marginRight: spacing.sm,
+  },
+  footerCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  footerCtaText: {
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.bold,
+    color: colors.highlight,
   },
 });

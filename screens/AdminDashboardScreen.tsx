@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Alert,
   RefreshControl,
@@ -34,6 +33,8 @@ import {
   AdminActivityItem,
 } from '../services/adminService';
 import { isFirebaseConfigured, getFirebaseProjectId } from '../services/firebase';
+import { ScreenWrapper } from '../components/ScreenWrapper';
+import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
 
 const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
   navigation,
@@ -86,7 +87,7 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
   const activityIcon = (type: AdminActivityItem['type']) => {
     switch (type) {
       case 'assessment':
-        return <ClipboardCheck size={18} color={colors.primary} />;
+        return <ClipboardCheck size={18} color={colors.highlight} />;
       case 'enrollment':
         return <TrendingUp size={18} color={colors.success} />;
       default:
@@ -115,20 +116,22 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ScreenWrapper gradient>
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <View style={styles.header}>
-          <Shield size={36} color={colors.primary} />
+        <AnimatedFadeIn index={0} style={styles.header}>
+          <View style={styles.adminIcon}>
+            <Shield size={30} color={colors.highlight} />
+          </View>
           <View style={styles.headerText}>
             <Text style={styles.title}>Admin Overview</Text>
             <Text style={styles.subtitle}>{account?.email}</Text>
           </View>
-        </View>
+        </AnimatedFadeIn>
 
         {isFirebaseConfigured() && (
           <Text style={styles.firebaseBadge}>
@@ -139,7 +142,7 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
         {loading ? (
           <ActivityIndicator
             size="large"
-            color={colors.primary}
+            color={colors.highlight}
             style={styles.loader}
           />
         ) : (
@@ -148,8 +151,8 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
               <StatCard
                 label="Total Students"
                 value={stats?.totalStudents ?? 0}
-                icon={<Users size={22} color={colors.primary} />}
-                accent={colors.primary}
+                icon={<Users size={22} color={colors.highlight} />}
+                accent={colors.highlight}
               />
               <StatCard
                 label="Active Assessments"
@@ -180,7 +183,7 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
 
             <View style={[styles.section, shadows.sm]}>
               <View style={styles.sectionHeader}>
-                <Activity size={22} color={colors.primary} />
+                <Activity size={22} color={colors.highlight} />
                 <Text style={styles.sectionTitle}>Recent Activity</Text>
               </View>
 
@@ -222,21 +225,21 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
             style={styles.quickLink}
             onPress={() => navigation.navigate('AdminCourses')}
           >
-            <BookMarked size={20} color={colors.primary} />
+            <BookMarked size={20} color={colors.highlight} />
             <Text style={styles.quickLinkText}>Courses</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.quickLink}
             onPress={() => navigation.navigate('AdminAssessments')}
           >
-            <ListChecks size={20} color={colors.primary} />
+            <ListChecks size={20} color={colors.highlight} />
             <Text style={styles.quickLinkText}>Questions</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.quickLink}
             onPress={() => navigation.navigate('AdminData')}
           >
-            <Database size={20} color={colors.primary} />
+            <Database size={20} color={colors.highlight} />
             <Text style={styles.quickLinkText}>Records</Text>
           </TouchableOpacity>
         </View>
@@ -246,12 +249,11 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
           <Text style={styles.logoutText}>Sign Out</Text>
         </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundcolor: colors.text },
   content: { padding: spacing.xl, paddingBottom: spacing['2xl'] },
   header: {
     flexDirection: 'row',
@@ -260,6 +262,14 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   headerText: { flex: 1 },
+  adminIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.highlightSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   title: {
     fontSize: typography.sizes['2xl'],
     fontWeight: typography.weights.bold,
@@ -287,7 +297,7 @@ const styles = StyleSheet.create({
     width: '47%',
     flexGrow: 1,
     backgroundColor: colors.surfaceElevated,
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.xl,
     padding: spacing.lg,
     borderWidth: 1,
     borderColor: colors.border,
@@ -318,8 +328,8 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   section: {
-    backgroundcolor: colors.text,
-    borderRadius: borderRadius.lg,
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: borderRadius.xl,
     padding: spacing.lg,
     borderWidth: 1,
     borderColor: colors.border,
@@ -393,12 +403,13 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
     borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceElevated,
+    ...shadows.sm,
   },
   quickLinkText: {
     fontSize: typography.sizes.sm,
     fontWeight: typography.weights.semibold,
-    color: colors.primary,
+    color: colors.highlight,
   },
   logoutBtn: {
     flexDirection: 'row',

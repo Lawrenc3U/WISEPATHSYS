@@ -4,12 +4,11 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Alert,
   TextInput,
 } from 'react-native';
-import { colors, spacing, borderRadius, typography } from '../utils/theme';
+import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
 import { AdminAssessmentsScreenProps } from '../navigation/types';
 import { QuizQuestion } from '../utils/types';
 import {
@@ -19,6 +18,8 @@ import {
 } from '../services/adminService';
 import { useCourseStore } from '../stores/courseStore';
 import { Plus, Trash2 } from 'lucide-react-native';
+import { ScreenWrapper } from '../components/ScreenWrapper';
+import { PrimaryButton } from '../components/PrimaryButton';
 
 const AdminAssessmentsScreen: React.FC<AdminAssessmentsScreenProps> = () => {
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
@@ -85,15 +86,20 @@ const AdminAssessmentsScreen: React.FC<AdminAssessmentsScreenProps> = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ScreenWrapper gradient>
       <ScrollView contentContainerStyle={styles.content}>
-        <TouchableOpacity style={styles.addBtn} onPress={startNew}>
-          <Plus size={20} color={colors.background} />
-          <Text style={styles.addBtnText}>Add Question</Text>
-        </TouchableOpacity>
+        <Text style={styles.eyebrow}>Assessment bank</Text>
+        <Text style={styles.pageTitle}>Manage questions</Text>
+        <Text style={styles.pageHint}>Keep career-assessment prompts clear and relevant.</Text>
+        <PrimaryButton
+          label="Add Question"
+          onPress={startNew}
+          icon={<Plus size={20} color="#FFFFFF" />}
+          style={styles.addBtn}
+        />
 
         {questions.map((q, index) => (
-          <View key={q.id} style={styles.card}>
+          <View key={q.id} style={[styles.card, shadows.sm]}>
             <Text style={styles.qNum}>Q{index + 1}</Text>
             <Text style={styles.qText}>{q.text}</Text>
             <Text style={styles.opts}>{q.options?.length || 0} options</Text>
@@ -109,7 +115,7 @@ const AdminAssessmentsScreen: React.FC<AdminAssessmentsScreenProps> = () => {
         ))}
 
         {editing && (
-          <View style={styles.form}>
+          <View style={[styles.form, shadows.md]}>
             <Text style={styles.formTitle}>Edit Question</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
@@ -126,53 +132,69 @@ const AdminAssessmentsScreen: React.FC<AdminAssessmentsScreenProps> = () => {
               multiline
             />
             <View style={styles.formActions}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={() => setEditing(null)}>
-                <Text>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-                <Text style={styles.saveBtnText}>Save</Text>
-              </TouchableOpacity>
+              <PrimaryButton
+                label="Cancel"
+                onPress={() => setEditing(null)}
+                variant="outline"
+                style={styles.formButton}
+              />
+              <PrimaryButton
+                label="Save"
+                onPress={handleSave}
+                style={styles.formButton}
+              />
             </View>
           </View>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundcolor: colors.text },
-  content: { padding: spacing.lg },
+  content: { padding: spacing.lg, paddingBottom: spacing['3xl'] },
+  eyebrow: {
+    color: colors.highlight,
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.bold,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  pageTitle: {
+    color: colors.text,
+    fontSize: typography.sizes['2xl'],
+    fontWeight: typography.weights.bold,
+    marginTop: spacing.xs,
+  },
+  pageHint: {
+    color: colors.textSecondary,
+    fontSize: typography.sizes.sm,
+    marginTop: spacing.xs,
+  },
   addBtn: {
-    flexDirection: 'row',
-    backgroundColor: colors.secondary,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
+    marginTop: spacing.lg,
     marginBottom: spacing.lg,
   },
-  addBtnText: { color: colors.text, fontWeight: typography.weights.bold },
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: borderRadius.xl,
     padding: spacing.lg,
     marginBottom: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
   },
-  qNum: { fontSize: typography.sizes.xs, color: colors.primary, fontWeight: typography.weights.bold },
+  qNum: { fontSize: typography.sizes.xs, color: colors.highlight, fontWeight: typography.weights.bold },
   qText: { fontWeight: typography.weights.semibold, marginTop: spacing.xs },
   opts: { fontSize: typography.sizes.xs, color: colors.textSecondary, marginTop: spacing.xs },
   row: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.md },
-  editLink: { color: colors.primary, fontWeight: typography.weights.semibold },
+  editLink: { color: colors.highlight, fontWeight: typography.weights.semibold },
   form: {
     marginTop: spacing.lg,
     padding: spacing.lg,
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.xl,
     borderWidth: 1,
-    borderColor: colors.secondary,
+    borderColor: colors.highlight,
+    backgroundColor: colors.surfaceElevated,
   },
   formTitle: { fontWeight: typography.weights.bold, marginBottom: spacing.md },
   hint: { fontSize: typography.sizes.xs, color: colors.textSecondary, marginBottom: spacing.xs },
@@ -182,19 +204,13 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md,
     padding: spacing.md,
     marginBottom: spacing.sm,
-    backgroundcolor: colors.text,
+    backgroundColor: colors.surfaceElevated,
   },
   textArea: { minHeight: 80 },
   formActions: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.md },
-  cancelBtn: { flex: 1, padding: spacing.md, alignItems: 'center' },
-  saveBtn: {
+  formButton: {
     flex: 1,
-    backgroundColor: colors.secondary,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
-    alignItems: 'center',
   },
-  saveBtnText: { color: colors.text, fontWeight: typography.weights.bold },
 });
 
 export default AdminAssessmentsScreen;

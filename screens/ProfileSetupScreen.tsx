@@ -4,16 +4,21 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
-import { colors, spacing, borderRadius, typography } from '../utils/theme';
+import { Check } from 'lucide-react-native';
+import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
 import { AuthTextInput } from '../components/AuthTextInput';
 import { useAuthStore } from '../stores/authStore';
 import { useUserStore } from '../stores/userStore';
 import { saveUserProfile } from '../services/authService';
 import { ProfileSetupScreenProps } from '../navigation/types';
+import { ScreenWrapper } from '../components/ScreenWrapper';
+import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
+import { PrimaryButton } from '../components/PrimaryButton';
 import {
   STUDENT_STATUS_OPTIONS,
   SHS_STRANDS,
@@ -38,17 +43,27 @@ const ChipRow = ({
   onChange: (v: string) => void;
 }) => (
   <View style={styles.chipRow}>
-    {options.map((opt) => (
-      <TouchableOpacity
-        key={opt}
-        style={[styles.chip, value === opt && styles.chipSelected]}
-        onPress={() => onChange(opt)}
-      >
-        <Text style={[styles.chipText, value === opt && styles.chipTextSelected]}>
-          {opt}
-        </Text>
-      </TouchableOpacity>
-    ))}
+    {options.map((opt) => {
+      const selected = value === opt;
+      return (
+        <TouchableOpacity
+          key={opt}
+          style={[styles.chip, selected && styles.chipSelected]}
+          onPress={() => onChange(opt)}
+          activeOpacity={0.75}
+        >
+          {selected ? (
+            <Check size={14} color="#FFFFFF" strokeWidth={3} />
+          ) : null}
+          <Text
+            style={[styles.chipText, selected && styles.chipTextSelected]}
+            numberOfLines={2}
+          >
+            {opt}
+          </Text>
+        </TouchableOpacity>
+      );
+    })}
   </View>
 );
 
@@ -69,13 +84,49 @@ const MultiChipRow = ({
           key={opt}
           style={[styles.chip, selected && styles.chipSelected]}
           onPress={() => onToggle(opt)}
+          activeOpacity={0.75}
         >
-          <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
+          {selected ? (
+            <Check size={14} color="#FFFFFF" strokeWidth={3} />
+          ) : null}
+          <Text
+            style={[styles.chipText, selected && styles.chipTextSelected]}
+            numberOfLines={2}
+          >
             {opt}
           </Text>
         </TouchableOpacity>
       );
     })}
+  </View>
+);
+
+const SectionCard = ({
+  title,
+  hint,
+  children,
+}: {
+  title: string;
+  hint?: string;
+  children: React.ReactNode;
+}) => (
+  <View style={[styles.card, shadows.sm]}>
+    <Text style={styles.cardTitle}>{title}</Text>
+    {hint ? <Text style={styles.cardHint}>{hint}</Text> : null}
+    {children}
+  </View>
+);
+
+const FieldBlock = ({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) => (
+  <View style={styles.fieldBlock}>
+    <Text style={styles.fieldLabel}>{label}</Text>
+    {children}
   </View>
 );
 
@@ -138,7 +189,7 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation }) =
       studentStatus,
       shsStrand,
       seniorHighStrand: shsStrand,
-      academicAverage: academicAverage.trim() || undefined,
+      academicAverage: academicAverage.trim(),
       residenceType,
       parentalIncomeLevel,
       careerInterests,
@@ -152,7 +203,7 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation }) =
         setAccount({ ...account, profileComplete: true, profile });
       }
       setUserProfile(profile);
-      navigation.replace('Dashboard');
+      navigation.replace('AssessmentQuiz');
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Could not save profile.';
@@ -163,129 +214,206 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation }) =
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Create your profile</Text>
-        <Text style={styles.subtitle}>
-          Tell us about yourself so we can personalize your course recommendations.
-        </Text>
-
-        <AuthTextInput
-          label="Full name"
-          value={name}
-          onChangeText={setName}
-          placeholder="Juan Dela Cruz"
-        />
-
-        <Text style={styles.sectionHeader}>Student status</Text>
-        <ChipRow
-          options={STUDENT_STATUS_OPTIONS.map((o) => o.label)}
-          value={
-            STUDENT_STATUS_OPTIONS.find((o) => o.value === studentStatus)?.label ||
-            STUDENT_STATUS_OPTIONS[0].label
-          }
-          onChange={(label) => {
-            const match = STUDENT_STATUS_OPTIONS.find((o) => o.label === label);
-            if (match) setStudentStatus(match.value);
-          }}
-        />
-
-        <Text style={styles.sectionHeader}>SHS strand</Text>
-        <ChipRow options={[...SHS_STRANDS]} value={shsStrand} onChange={setShsStrand} />
-
-        <AuthTextInput
-          label="Academic average (optional)"
-          value={academicAverage}
-          onChangeText={setAcademicAverage}
-          placeholder="e.g. 88 or 1.75"
-        />
-
-        <Text style={styles.sectionHeader}>Residence</Text>
-        <ChipRow
-          options={RESIDENCE_TYPE_OPTIONS.map((o) => o.label)}
-          value={
-            RESIDENCE_TYPE_OPTIONS.find((o) => o.value === residenceType)?.label ||
-            RESIDENCE_TYPE_OPTIONS[0].label
-          }
-          onChange={(label) => {
-            const match = RESIDENCE_TYPE_OPTIONS.find((o) => o.label === label);
-            if (match) setResidenceType(match.value);
-          }}
-        />
-
-        <Text style={styles.sectionHeader}>Parental income (optional)</Text>
-        <ChipRow
-          options={PARENTAL_INCOME_OPTIONS.map((o) => o.label)}
-          value={
-            PARENTAL_INCOME_OPTIONS.find((o) => o.value === parentalIncomeLevel)
-              ?.label || PARENTAL_INCOME_OPTIONS[PARENTAL_INCOME_OPTIONS.length - 1].label
-          }
-          onChange={(label) => {
-            const match = PARENTAL_INCOME_OPTIONS.find((o) => o.label === label);
-            if (match) setParentalIncomeLevel(match.value);
-          }}
-        />
-
-        <Text style={styles.sectionHeader}>Career interests</Text>
-        <Text style={styles.fieldLabel}>Select all that apply</Text>
-        <MultiChipRow
-          options={CAREER_INTEREST_OPTIONS}
-          values={careerInterests}
-          onToggle={toggleCareerInterest}
-        />
-
-        <Text style={styles.sectionHeader}>Learning goals</Text>
-        <Text style={styles.fieldLabel}>What do you hope to achieve? (select all that apply)</Text>
-        <MultiChipRow
-          options={LEARNING_GOALS_OPTIONS}
-          values={learningGoals}
-          onToggle={toggleLearningGoal}
-        />
-
-        <Text style={styles.sectionHeader}>Skill level</Text>
-        <ChipRow options={SKILL_LEVELS} value={currentSkills} onChange={setCurrentSkills} />
-
-        <Text style={styles.sectionHeader}>Learning style</Text>
-        <ChipRow options={LEARNING_STYLES} value={learningStyle} onChange={setLearningStyle} />
-
-        <Text style={styles.sectionHeader}>Experience</Text>
-        <ChipRow options={EXPERIENCE} value={experience} onChange={setExperience} />
-
-        <TouchableOpacity
-          style={[styles.primaryBtn, loading && styles.disabled]}
-          onPress={handleSave}
-          disabled={loading}
+    <ScreenWrapper gradient>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.primaryBtnText}>
-            {loading ? 'Saving...' : 'Continue to Dashboard'}
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
+          <AnimatedFadeIn index={0} style={styles.header}>
+            <Text style={styles.eyebrow}>Welcome to WisePath</Text>
+            <Text style={styles.title}>Create your profile</Text>
+            <Text style={styles.subtitle}>
+              Tell us about yourself, then take a short assessment. Together
+              they rank your top 3 program matches.
+            </Text>
+          </AnimatedFadeIn>
+
+          <SectionCard title="About you">
+            <AuthTextInput
+              label="Full name"
+              value={name}
+              onChangeText={setName}
+              placeholder="Juan Dela Cruz"
+              autoCapitalize="words"
+            />
+
+            <FieldBlock label="Student status">
+              <ChipRow
+                options={STUDENT_STATUS_OPTIONS.map((o) => o.label)}
+                value={
+                  STUDENT_STATUS_OPTIONS.find((o) => o.value === studentStatus)
+                    ?.label || STUDENT_STATUS_OPTIONS[0].label
+                }
+                onChange={(label) => {
+                  const match = STUDENT_STATUS_OPTIONS.find((o) => o.label === label);
+                  if (match) setStudentStatus(match.value);
+                }}
+              />
+            </FieldBlock>
+
+            <FieldBlock label="SHS strand">
+              <ChipRow
+                options={[...SHS_STRANDS]}
+                value={shsStrand}
+                onChange={setShsStrand}
+              />
+            </FieldBlock>
+
+            <AuthTextInput
+              label="Academic average (optional)"
+              value={academicAverage}
+              onChangeText={setAcademicAverage}
+              placeholder="e.g. 88 or 1.75"
+              keyboardType="decimal-pad"
+            />
+          </SectionCard>
+
+          <SectionCard title="Background" hint="Used only to personalize guidance">
+            <FieldBlock label="Residence">
+              <ChipRow
+                options={RESIDENCE_TYPE_OPTIONS.map((o) => o.label)}
+                value={
+                  RESIDENCE_TYPE_OPTIONS.find((o) => o.value === residenceType)
+                    ?.label || RESIDENCE_TYPE_OPTIONS[0].label
+                }
+                onChange={(label) => {
+                  const match = RESIDENCE_TYPE_OPTIONS.find((o) => o.label === label);
+                  if (match) setResidenceType(match.value);
+                }}
+              />
+            </FieldBlock>
+
+            <FieldBlock label="Parental income (optional)">
+              <ChipRow
+                options={PARENTAL_INCOME_OPTIONS.map((o) => o.label)}
+                value={
+                  PARENTAL_INCOME_OPTIONS.find((o) => o.value === parentalIncomeLevel)
+                    ?.label ||
+                  PARENTAL_INCOME_OPTIONS[PARENTAL_INCOME_OPTIONS.length - 1].label
+                }
+                onChange={(label) => {
+                  const match = PARENTAL_INCOME_OPTIONS.find((o) => o.label === label);
+                  if (match) setParentalIncomeLevel(match.value);
+                }}
+              />
+            </FieldBlock>
+          </SectionCard>
+
+          <SectionCard
+            title="Career interests"
+            hint={`${careerInterests.length} selected · pick at least one`}
+          >
+            <MultiChipRow
+              options={CAREER_INTEREST_OPTIONS}
+              values={careerInterests}
+              onToggle={toggleCareerInterest}
+            />
+          </SectionCard>
+
+          <SectionCard
+            title="Learning goals"
+            hint={`${learningGoals.length} selected · pick at least one`}
+          >
+            <MultiChipRow
+              options={LEARNING_GOALS_OPTIONS}
+              values={learningGoals}
+              onToggle={toggleLearningGoal}
+            />
+          </SectionCard>
+
+          <SectionCard title="Learning preferences">
+            <FieldBlock label="Skill level">
+              <ChipRow
+                options={SKILL_LEVELS}
+                value={currentSkills}
+                onChange={setCurrentSkills}
+              />
+            </FieldBlock>
+
+            <FieldBlock label="Learning style">
+              <ChipRow
+                options={LEARNING_STYLES}
+                value={learningStyle}
+                onChange={setLearningStyle}
+              />
+            </FieldBlock>
+
+            <FieldBlock label="Experience">
+              <ChipRow
+                options={EXPERIENCE}
+                value={experience}
+                onChange={setExperience}
+              />
+            </FieldBlock>
+          </SectionCard>
+
+          <PrimaryButton
+            label="Take Assessment"
+            onPress={handleSave}
+            loading={loading}
+            style={styles.cta}
+          />
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ScreenWrapper>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.xl, paddingBottom: spacing['2xl'] },
+  flex: { flex: 1 },
+  content: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing['3xl'],
+  },
+  header: {
+    marginBottom: spacing.xl,
+  },
+  eyebrow: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.semibold,
+    color: colors.highlight,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    marginBottom: spacing.xs,
+  },
   title: {
     fontSize: typography.sizes['2xl'],
     fontWeight: typography.weights.bold,
     color: colors.text,
   },
   subtitle: {
-    fontSize: typography.sizes.base,
+    fontSize: typography.sizes.sm,
     color: colors.textSecondary,
     marginTop: spacing.sm,
-    marginBottom: spacing.xl,
-    lineHeight: 22,
+    lineHeight: 20,
   },
-  sectionHeader: {
-    fontSize: typography.sizes.base,
+  card: {
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: borderRadius.xl,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(149, 189, 215, 0.35)',
+  },
+  cardTitle: {
+    fontSize: typography.sizes.lg,
     fontWeight: typography.weights.bold,
     color: colors.text,
-    marginTop: spacing.md,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  cardHint: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
+  },
+  fieldBlock: {
+    marginBottom: spacing.md,
   },
   fieldLabel: {
     fontSize: typography.sizes.sm,
@@ -297,28 +425,37 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm,
-    marginBottom: spacing.lg,
   },
   chip: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-  },
-  chipSelected: { borderColor: colors.accent, backgroundColor: colors.primary },
-  chipText: { fontSize: typography.sizes.sm, color: colors.text },
-  chipTextSelected: { color: colors.text, fontWeight: typography.weights.bold },
-  primaryBtn: {
-    backgroundColor: colors.primary,
-    borderRadius: borderRadius.lg,
-    paddingVertical: spacing.lg,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: spacing.lg,
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: borderRadius.full,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    backgroundColor: colors.highlightSoft,
+    maxWidth: '100%',
   },
-  primaryBtnText: { color: colors.text, fontWeight: typography.weights.bold },
-  disabled: { opacity: 0.6 },
+  chipSelected: {
+    backgroundColor: colors.highlight,
+    borderColor: colors.highlight,
+  },
+  chipText: {
+    fontSize: typography.sizes.sm,
+    color: colors.text,
+    fontWeight: typography.weights.medium,
+    flexShrink: 1,
+  },
+  chipTextSelected: {
+    color: '#FFFFFF',
+    fontWeight: typography.weights.bold,
+  },
+  cta: {
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
+  },
 });
 
 export default ProfileSetupScreen;

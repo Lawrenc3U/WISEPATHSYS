@@ -4,8 +4,8 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  ScrollView,
 } from 'react-native';
+import { Check } from 'lucide-react-native';
 import { colors, spacing, borderRadius, typography } from '../utils/theme';
 import { QuizQuestion } from '../utils/types';
 
@@ -14,6 +14,8 @@ interface QuestionCardProps {
   selectedAnswer: string | undefined;
   onSelectAnswer: (answer: string) => void;
   progress: number;
+  hideProgress?: boolean;
+  questionNumber?: number;
 }
 
 export const QuestionCard: React.FC<QuestionCardProps> = ({
@@ -21,38 +23,47 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   selectedAnswer,
   onSelectAnswer,
   progress,
+  hideProgress = false,
+  questionNumber,
 }) => {
   const renderMultipleChoice = () => (
     <View style={styles.optionsContainer}>
       {question.options?.map((option, index) => {
         const indexKey = index.toString();
         const isSelected = selectedAnswer === indexKey;
+        const letter = String.fromCharCode(65 + index);
         return (
-        <TouchableOpacity
-          key={`${question.id}-${index}`}
-          style={[
-            styles.optionButton,
-            isSelected && styles.optionButtonSelected,
-          ]}
-          onPress={() => onSelectAnswer(indexKey)}
-          activeOpacity={0.7}
-        >
-          <View
+          <TouchableOpacity
+            key={`${question.id}-${index}`}
             style={[
-              styles.optionDot,
-              isSelected && styles.optionDotSelected,
+              styles.optionButton,
+              isSelected && styles.optionButtonSelected,
             ]}
-          />
-          <Text
-            style={[
-              styles.optionText,
-              isSelected && styles.optionTextSelected,
-            ]}
+            onPress={() => onSelectAnswer(indexKey)}
+            activeOpacity={0.75}
           >
-            {option}
-          </Text>
-        </TouchableOpacity>
-      );
+            <View
+              style={[
+                styles.optionLetter,
+                isSelected && styles.optionLetterSelected,
+              ]}
+            >
+              {isSelected ? (
+                <Check size={14} color="#FFFFFF" strokeWidth={3} />
+              ) : (
+                <Text style={styles.optionLetterText}>{letter}</Text>
+              )}
+            </View>
+            <Text
+              style={[
+                styles.optionText,
+                isSelected && styles.optionTextSelected,
+              ]}
+            >
+              {option}
+            </Text>
+          </TouchableOpacity>
+        );
       })}
     </View>
   );
@@ -65,79 +76,82 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
 
     return (
       <View style={styles.scaleContainer}>
-        {scales.map((scale) => (
-          <TouchableOpacity
-            key={scale}
-            style={[
-              styles.scaleButton,
-              selectedAnswer === scale && styles.scaleButtonSelected,
-            ]}
-            onPress={() => onSelectAnswer(scale)}
-            activeOpacity={0.7}
-          >
-            <Text
+        {scales.map((scale) => {
+          const isSelected = selectedAnswer === scale;
+          return (
+            <TouchableOpacity
+              key={scale}
               style={[
-                styles.scaleText,
-                selectedAnswer === scale && styles.scaleTextSelected,
+                styles.scaleButton,
+                isSelected && styles.scaleButtonSelected,
               ]}
+              onPress={() => onSelectAnswer(scale)}
+              activeOpacity={0.75}
             >
-              {scale}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                style={[
+                  styles.scaleText,
+                  isSelected && styles.scaleTextSelected,
+                ]}
+              >
+                {scale}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
     );
   };
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.container}
-      scrollEnabled={true}
-    >
-      {/* Progress Bar */}
-      <View style={styles.progressContainer}>
-        <View style={styles.progressBarBackground}>
-          <View
-            style={[styles.progressBar, { width: `${progress * 100}%` }]}
-          />
+    <View style={styles.container}>
+      {!hideProgress && (
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBarBackground}>
+            <View
+              style={[styles.progressBar, { width: `${progress * 100}%` }]}
+            />
+          </View>
+          <Text style={styles.progressText}>
+            {Math.round(progress * 100)}%
+          </Text>
         </View>
-        <Text style={styles.progressText}>
-          {Math.round(progress * 100)}%
-        </Text>
-      </View>
+      )}
 
-      {/* Question */}
       <View style={styles.questionContainer}>
+        {questionNumber != null ? (
+          <Text style={styles.questionBadge}>Q{questionNumber}</Text>
+        ) : null}
         <Text style={styles.questionText}>{question.text}</Text>
+        <Text style={styles.hintText}>Select the option that fits you best</Text>
       </View>
 
-      {/* Answer Options */}
       {question.type === 'multipleChoice'
         ? renderMultipleChoice()
         : renderScale()}
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
+    paddingTop: spacing.lg,
     paddingBottom: spacing.xl,
   },
   progressContainer: {
-    marginBottom: spacing['2xl'],
+    marginBottom: spacing.xl,
   },
   progressBarBackground: {
     height: 8,
-    backgroundColor: colors.border,
+    backgroundColor: colors.highlightSoft,
     borderRadius: borderRadius.full,
     overflow: 'hidden',
     marginBottom: spacing.md,
   },
   progressBar: {
     height: '100%',
-    backgroundColor: colors.primary,
+    backgroundColor: colors.highlight,
   },
   progressText: {
     fontSize: typography.sizes.sm,
@@ -145,70 +159,96 @@ const styles = StyleSheet.create({
     fontWeight: typography.weights.medium,
   },
   questionContainer: {
-    marginBottom: spacing['2xl'],
+    marginBottom: spacing.xl,
+  },
+  questionBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.highlightSoft,
+    color: colors.highlight,
+    overflow: 'hidden',
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.bold,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: borderRadius.full,
+    marginBottom: spacing.sm,
   },
   questionText: {
     fontSize: typography.sizes.xl,
     fontWeight: typography.weights.bold,
     color: colors.text,
     lineHeight: 28,
+    marginBottom: spacing.sm,
+  },
+  hintText: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
   },
   optionsContainer: {
-    gap: spacing.md,
+    gap: spacing.sm,
   },
   optionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: spacing.lg,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
     borderRadius: borderRadius.lg,
-    borderWidth: 2,
-    borderColor: colors.border,
-    backgroundcolor: colors.text,
+    borderWidth: 1.5,
+    borderColor: 'rgba(149, 189, 215, 0.55)',
+    backgroundColor: colors.highlightSoft,
   },
   optionButtonSelected: {
-    borderColor: colors.primary,
-    backgroundColor: '#F3EFFF',
+    borderColor: colors.highlight,
+    backgroundColor: colors.highlight,
   },
-  optionDot: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
+  optionLetter: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1.5,
     borderColor: colors.border,
+    backgroundColor: colors.surfaceElevated,
     marginRight: spacing.md,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  optionDotSelected: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primary,
+  optionLetterSelected: {
+    borderColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.22)',
+  },
+  optionLetterText: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.bold,
+    color: colors.highlight,
   },
   optionText: {
     flex: 1,
     fontSize: typography.sizes.base,
     color: colors.text,
     fontWeight: typography.weights.medium,
+    lineHeight: 22,
   },
   optionTextSelected: {
-    color: colors.primary,
+    color: '#FFFFFF',
     fontWeight: typography.weights.bold,
   },
   scaleContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: spacing['2xl'],
-    gap: spacing.md,
+    gap: spacing.sm,
   },
   scaleButton: {
     flex: 1,
     paddingVertical: spacing.lg,
     alignItems: 'center',
     borderRadius: borderRadius.lg,
-    borderWidth: 2,
-    borderColor: colors.border,
-    backgroundcolor: colors.text,
+    borderWidth: 1.5,
+    borderColor: 'rgba(149, 189, 215, 0.55)',
+    backgroundColor: colors.highlightSoft,
   },
   scaleButtonSelected: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primary,
+    borderColor: colors.highlight,
+    backgroundColor: colors.highlight,
   },
   scaleText: {
     fontSize: typography.sizes.lg,
@@ -216,6 +256,6 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   scaleTextSelected: {
-    color: colors.text,
+    color: '#FFFFFF',
   },
 });

@@ -8,44 +8,50 @@ import {
 } from 'react-native';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
-import { PrimaryButton } from '../components/PrimaryButton';
-import { colors, spacing, borderRadius, typography } from '../utils/theme';
+import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
 import { RecommendationItem } from '../components/RecommendationItem';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useUserStore } from '../stores/userStore';
-import { useCourseStore } from '../stores/courseStore';
 import { SAMPLE_COURSES } from '../utils/constants';
 import { RecommendationsScreenProps } from '../navigation/types';
-import { ChevronRight, Sparkles } from 'lucide-react-native';
+import {
+  ChevronRight,
+  Sparkles,
+  Trophy,
+  LayoutDashboard,
+} from 'lucide-react-native';
 import { getAIAnalysis } from '../services/aiService';
 
 const RecommendationsScreen: React.FC<RecommendationsScreenProps> = ({
   navigation,
 }) => {
-  const [isLoading, setIsLoading] = useState(false);
   const currentRecommendations = useUserStore(
     (state) => state.currentRecommendations
   );
   const setSelectedCourseId = useUserStore((state) => state.setSelectedCourseId);
-
   const userProfile = useUserStore((state) => state.userProfile);
 
-  const recommendations = currentRecommendations;
-  const latestQuiz = userProfile?.quizHistory?.[userProfile.quizHistory.length - 1];
+  const recommendations = currentRecommendations.slice(0, 3);
+  const latestQuiz =
+    userProfile?.quizHistory?.[userProfile.quizHistory.length - 1];
 
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(true);
 
   useEffect(() => {
     const fetchAnalysis = async () => {
-      if (userProfile && latestQuiz && latestQuiz.courseRankings) {
+      if (userProfile && latestQuiz?.courseRankings) {
         setIsAiLoading(true);
         try {
-          const analysis = await getAIAnalysis(userProfile, latestQuiz.courseRankings, SAMPLE_COURSES);
+          const analysis = await getAIAnalysis(
+            userProfile,
+            latestQuiz.courseRankings,
+            SAMPLE_COURSES
+          );
           setAiAnalysis(analysis);
         } catch (error) {
           console.error('Failed to fetch AI analysis:', error);
-          setAiAnalysis('Could not load AI analysis at this time.');
+          setAiAnalysis('Could not load guidance at this time.');
         } finally {
           setIsAiLoading(false);
         }
@@ -62,27 +68,31 @@ const RecommendationsScreen: React.FC<RecommendationsScreenProps> = ({
   };
 
   const handleEnroll = () => {
-    if (recommendations[0]?.courses[0]) {
-      handleCoursePress(recommendations[0].courses[0].id);
-    }
+    const topId = recommendations[0]?.courses[0]?.id;
+    if (topId) handleCoursePress(topId);
   };
 
-  if (isLoading) {
-    return <LoadingSpinner message="Generating recommendations..." />;
-  }
-
-  if (!recommendations || recommendations.length === 0) {
+  if (!recommendations.length) {
     return (
-      <ScreenWrapper>
+      <ScreenWrapper gradient>
         <View style={styles.emptyState}>
-          <Text style={styles.emptyTitle}>No recommendations found</Text>
+          <Text style={styles.emptyTitle}>No recommendations yet</Text>
           <Text style={styles.emptyText}>
-            Please complete the assessment to get personalized recommendations.
+            Complete your profile and assessment to see your top 3 program matches.
           </Text>
+          <TouchableOpacity
+            style={styles.primaryBtn}
+            onPress={() => navigation.navigate('AssessmentQuiz')}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.primaryBtnText}>Take Assessment</Text>
+          </TouchableOpacity>
         </View>
       </ScreenWrapper>
     );
   }
+
+  const topMatch = recommendations[0];
 
   return (
     <ScreenWrapper gradient>
@@ -91,20 +101,25 @@ const RecommendationsScreen: React.FC<RecommendationsScreenProps> = ({
         showsVerticalScrollIndicator={false}
       >
         <AnimatedFadeIn index={0}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Your program fit results</Text>
-          <Text style={styles.subtitle}>
-            All three programs ranked from your answers — pick any path to explore
-          </Text>
-        </View>
+          <View style={styles.header}>
+            <View style={styles.trophyBadge}>
+              <Trophy size={18} color={colors.highlight} />
+              <Text style={styles.trophyText}>Results ready</Text>
+            </View>
+            <Text style={styles.title}>Your top 3 matches</Text>
+            <Text style={styles.subtitle}>
+              Ranked from your profile answers and assessment results
+            </Text>
+          </View>
         </AnimatedFadeIn>
 
-        {/* AI Analysis Section */}
-        <AnimatedFadeIn index={0.5}>
-          <View style={styles.aiSection}>
+        <AnimatedFadeIn index={1}>
+          <View style={[styles.aiCard, shadows.sm]}>
             <View style={styles.aiHeaderRow}>
-              <Sparkles size={20} color={colors.primary} />
-              <Text style={styles.aiTitle}>AI Guidance Counselor</Text>
+              <View style={styles.aiIcon}>
+                <Sparkles size={18} color={colors.highlight} />
+              </View>
+              <Text style={styles.aiTitle}>Guidance summary</Text>
             </View>
             {isAiLoading ? (
               <LoadingSpinner message="Analyzing your profile..." />
@@ -114,123 +129,134 @@ const RecommendationsScreen: React.FC<RecommendationsScreenProps> = ({
           </View>
         </AnimatedFadeIn>
 
-        {recommendations.slice(0, 3).map((rec, index) => (
-          <AnimatedFadeIn key={rec.id} index={index + 1}>
-            <View style={styles.topRecommendation}>
-              <RecommendationItem
-                recommendation={rec}
-                onPress={() => {
-                  if (rec.courses[0]) {
-                    handleCoursePress(rec.courses[0].id);
-                  }
-                }}
-              />
-            </View>
+        {recommendations.map((rec, index) => (
+          <AnimatedFadeIn key={rec.id} index={index + 2}>
+            <RecommendationItem
+              recommendation={rec}
+              rank={index + 1}
+              onPress={() => {
+                if (rec.courses[0]) handleCoursePress(rec.courses[0].id);
+              }}
+            />
           </AnimatedFadeIn>
         ))}
 
-        <AnimatedFadeIn index={recommendations.length + 1}>
-        <View style={styles.allCoursesSection}>
-          <Text style={styles.sectionTitle}>Browse program details</Text>
+        <AnimatedFadeIn index={6}>
+          <Text style={styles.sectionTitle}>Browse all programs</Text>
           <Text style={styles.sectionSubtitle}>
-            Compare curriculum, careers, and skills for each degree
+            Compare curriculum, careers, and skills
           </Text>
 
-          <View style={styles.coursesList}>
-            {SAMPLE_COURSES.map((course) => (
+          {SAMPLE_COURSES.map((course) => {
+            const isTop = topMatch?.courses[0]?.id === course.id;
+            return (
               <TouchableOpacity
                 key={course.id}
-                style={styles.courseCard}
+                style={[
+                  styles.courseCard,
+                  shadows.sm,
+                  isTop && styles.courseCardTop,
+                ]}
                 onPress={() => handleCoursePress(course.id)}
-                activeOpacity={0.7}
+                activeOpacity={0.8}
               >
                 <View style={styles.courseCardHeader}>
                   <View style={styles.courseInfo}>
+                    {isTop ? (
+                      <Text style={styles.topTag}>Your #1 match</Text>
+                    ) : null}
                     <Text style={styles.courseTitle}>{course.title}</Text>
                     <Text style={styles.courseDuration}>{course.duration}</Text>
                   </View>
-                  <ChevronRight
-                    size={24}
-                    color={colors.primary}
-                    strokeWidth={2}
-                  />
+                  <ChevronRight size={22} color={colors.highlight} />
                 </View>
-
                 <Text style={styles.courseDescription} numberOfLines={2}>
                   {course.description}
                 </Text>
-
                 <View style={styles.courseStats}>
-                  <StatPill label="Careers" value={course.careerPaths.length} />
-                  <StatPill label="Skills" value={course.skills.length} />
-                  <StatPill label="Duration" value={course.duration} />
+                  <View style={styles.statPill}>
+                    <Text style={styles.statPillText}>
+                      {course.careerPaths.length} careers
+                    </Text>
+                  </View>
+                  <View style={styles.statPill}>
+                    <Text style={styles.statPillText}>
+                      {course.skills.length} skills
+                    </Text>
+                  </View>
                 </View>
               </TouchableOpacity>
-            ))}
-          </View>
-        </View>
+            );
+          })}
         </AnimatedFadeIn>
 
-        <AnimatedFadeIn index={recommendations.length + 2}>
-        <View style={styles.ctaSection}>
-          <PrimaryButton label="View top match" onPress={handleEnroll} />
-          <PrimaryButton
-            label="Go to Dashboard"
-            onPress={() => navigation.navigate('Dashboard')}
-            variant="outline"
-            style={{ marginTop: spacing.md }}
-          />
-        </View>
+        <AnimatedFadeIn index={7}>
+          <View style={styles.ctaSection}>
+            <TouchableOpacity
+              style={styles.primaryBtn}
+              onPress={handleEnroll}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.primaryBtnText}>View top match details</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.outlineBtn}
+              onPress={() => navigation.navigate('Dashboard')}
+              activeOpacity={0.85}
+            >
+              <LayoutDashboard size={18} color={colors.highlight} />
+              <Text style={styles.outlineBtnText}>Go to Dashboard</Text>
+            </TouchableOpacity>
+          </View>
         </AnimatedFadeIn>
       </ScrollView>
     </ScreenWrapper>
   );
 };
 
-interface StatPillProps {
-  label: string;
-  value: string | number;
-}
-
-const StatPill: React.FC<StatPillProps> = ({ label, value }) => (
-  <View style={styles.statPill}>
-    <Text style={styles.statPillText}>
-      {label}: {value}
-    </Text>
-  </View>
-);
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.text,
-  },
   contentContainer: {
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.lg,
-    paddingBottom: spacing.xl,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing['3xl'],
   },
   header: {
     marginBottom: spacing.xl,
-    gap: spacing.sm,
+  },
+  trophyBadge: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: colors.highlightSoft,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 6,
+    borderRadius: borderRadius.full,
+    marginBottom: spacing.sm,
+  },
+  trophyText: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.bold,
+    color: colors.highlight,
   },
   title: {
     fontSize: typography.sizes['2xl'],
-    fontWeight: 'bold',
+    fontWeight: typography.weights.bold,
     color: colors.text,
+    marginBottom: spacing.xs,
   },
   subtitle: {
-    fontSize: typography.sizes.base,
+    fontSize: typography.sizes.sm,
     color: colors.textSecondary,
-    lineHeight: 24,
+    lineHeight: 20,
   },
-  aiSection: {
-    backgroundColor: '#F0F9FF',
+  aiCard: {
+    backgroundColor: colors.surfaceElevated,
     padding: spacing.lg,
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.xl,
     marginBottom: spacing.xl,
     borderWidth: 1,
-    borderColor: '#BAE6FD',
+    borderColor: 'rgba(149, 189, 215, 0.45)',
   },
   aiHeaderRow: {
     flexDirection: 'row',
@@ -238,58 +264,66 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     gap: spacing.sm,
   },
+  aiIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.highlightSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   aiTitle: {
     fontSize: typography.sizes.base,
-    fontWeight: 'bold',
-    color: '#0284C7',
+    fontWeight: typography.weights.bold,
+    color: colors.text,
   },
   aiText: {
     fontSize: typography.sizes.sm,
     color: colors.text,
     lineHeight: 22,
   },
-  topRecommendation: {
-    marginBottom: spacing.xl,
-  },
-  allCoursesSection: {
-    marginBottom: spacing.xl,
-  },
   sectionTitle: {
     fontSize: typography.sizes.lg,
-    fontWeight: 'bold',
+    fontWeight: typography.weights.bold,
     color: colors.text,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
+    marginTop: spacing.md,
   },
   sectionSubtitle: {
     fontSize: typography.sizes.sm,
     color: colors.textSecondary,
     marginBottom: spacing.md,
   },
-  coursesList: {
-    gap: spacing.md,
-  },
   courseCard: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: borderRadius.xl,
     padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
+    marginBottom: spacing.md,
+    borderWidth: 1.5,
+    borderColor: 'rgba(149, 189, 215, 0.4)',
+  },
+  courseCardTop: {
+    borderColor: colors.highlight,
+    backgroundColor: colors.highlightSoft,
   },
   courseCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
-  courseInfo: {
-    flex: 1,
-    marginRight: spacing.md,
+  courseInfo: { flex: 1, marginRight: spacing.md },
+  topTag: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.bold,
+    color: colors.highlight,
+    marginBottom: 4,
   },
   courseTitle: {
     fontSize: typography.sizes.base,
-    fontWeight: 'bold',
+    fontWeight: typography.weights.bold,
     color: colors.text,
-    marginBottom: spacing.xs,
+    marginBottom: 2,
   },
   courseDuration: {
     fontSize: typography.sizes.xs,
@@ -298,7 +332,7 @@ const styles = StyleSheet.create({
   courseDescription: {
     fontSize: typography.sizes.sm,
     color: colors.textSecondary,
-    lineHeight: 18,
+    lineHeight: 20,
     marginBottom: spacing.md,
   },
   courseStats: {
@@ -307,63 +341,73 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   statPill: {
-    backgroundColor: colors.text,
+    backgroundColor: colors.surfaceElevated,
     borderRadius: borderRadius.full,
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.md,
+    borderWidth: 1,
+    borderColor: 'rgba(149, 189, 215, 0.45)',
   },
   statPillText: {
     fontSize: typography.sizes.xs,
-    color: colors.textSecondary,
-    fontWeight: '500',
+    color: colors.highlight,
+    fontWeight: typography.weights.semibold,
   },
   ctaSection: {
+    marginTop: spacing.xl,
     gap: spacing.md,
   },
-  enrollButton: {
-    backgroundColor: colors.primary,
+  primaryBtn: {
+    backgroundColor: colors.highlight,
     borderRadius: borderRadius.lg,
     paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.xl,
     alignItems: 'center',
+    shadowColor: colors.highlight,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.28,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  enrollButtonText: {
+  primaryBtnText: {
+    color: '#FFFFFF',
+    fontWeight: typography.weights.bold,
     fontSize: typography.sizes.base,
-    fontWeight: 'bold',
-    color: colors.text,
   },
-  backButton: {
-    backgroundColor: colors.surface,
+  outlineBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.surfaceElevated,
     borderRadius: borderRadius.lg,
     paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.xl,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: colors.primary,
+    borderWidth: 1.5,
+    borderColor: colors.highlight,
   },
-  backButtonText: {
+  outlineBtnText: {
+    color: colors.highlight,
+    fontWeight: typography.weights.bold,
     fontSize: typography.sizes.base,
-    fontWeight: 'bold',
-    color: colors.primary,
   },
   emptyState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.xl,
   },
   emptyTitle: {
     fontSize: typography.sizes.lg,
-    fontWeight: '600',
+    fontWeight: typography.weights.bold,
     color: colors.text,
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
     textAlign: 'center',
   },
   emptyText: {
     fontSize: typography.sizes.base,
     color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 22,
+    marginBottom: spacing.xl,
   },
 });
 

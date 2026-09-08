@@ -26,6 +26,8 @@ export interface Course {
   description: string;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   duration: string;
+  /** Indicative tuition range; actual fees may vary by term. */
+  estimatedTuitionPerTerm?: string;
   skills: string[];
   careerPaths: string[];
   curriculum: string[];

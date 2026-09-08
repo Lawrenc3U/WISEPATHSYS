@@ -40,11 +40,11 @@ import { useUserStore } from '../stores/userStore';
 import { UserAccount } from '../utils/types';
 
 const screenOptions = {
-  headerStyle: { backgroundcolor: colors.text },
+  headerStyle: { backgroundColor: colors.surfaceElevated },
   headerTintColor: colors.text,
   headerTitleStyle: { fontWeight: '600' as const },
   headerShadowVisible: false,
-  contentStyle: { backgroundcolor: colors.text },
+  contentStyle: { backgroundColor: colors.background },
 };
 
 const AuthStack = createNativeStackNavigator<Pick<RootStackParamList, 'Login' | 'Register'>>();

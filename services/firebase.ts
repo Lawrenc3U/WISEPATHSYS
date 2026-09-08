@@ -51,6 +51,29 @@ let auth: Auth | null = null;
 let db: Firestore | null = null;
 let initError: string | null = null;
 
+/** Recursively omit undefined fields before sending plain data to Firestore. */
+export const sanitizeForFirestore = <T>(value: T): T => {
+  if (Array.isArray(value)) {
+    return value
+      .filter((item) => item !== undefined)
+      .map((item) => sanitizeForFirestore(item)) as T;
+  }
+
+  if (
+    value !== null &&
+    typeof value === 'object' &&
+    Object.getPrototypeOf(value) === Object.prototype
+  ) {
+    return Object.fromEntries(
+      Object.entries(value)
+        .filter(([, item]) => item !== undefined)
+        .map(([key, item]) => [key, sanitizeForFirestore(item)])
+    ) as T;
+  }
+
+  return value;
+};
+
 const getFirebaseApp = (): FirebaseApp => {
   if (!app) {
     app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);

@@ -9,7 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { colors, spacing, typography } from '../utils/theme';
+import { colors, spacing, typography, shadows } from '../utils/theme';
 import { AuthTextInput } from '../components/AuthTextInput';
 import { loginWithEmail, getFirebaseAuthErrorMessage } from '../services/authService';
 import { useAuthStore } from '../stores/authStore';
@@ -85,8 +85,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           keyboardShouldPersistTaps="handled"
         >
           <AnimatedFadeIn index={0}>
-            <View style={styles.logo}>
-              <BookOpen size={40} color={colors.primary} />
+            <View style={[styles.logo, shadows.sm]}>
+              <BookOpen size={40} color={colors.highlight} />
             </View>
             <Text style={styles.title}>Welcome back</Text>
             <Text style={styles.subtitle}>Sign in to continue your WisePath journey</Text>
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundcolor: colors.text,
+    backgroundColor: colors.surfaceElevated,
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontSize: typography.sizes.sm,
   },
-  linkBold: { color: colors.primary, fontWeight: typography.weights.bold },
+  linkBold: { color: colors.highlight, fontWeight: typography.weights.bold },
 });
 
 export default LoginScreen;

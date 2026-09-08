@@ -1,16 +1,14 @@
-import React, { useMemo, useState } from 'react';
-import { View, ScrollView, Text, StyleSheet } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, ScrollView, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, spacing, borderRadius, typography } from '../utils/theme';
+import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
 import { useCourseStore } from '../stores/courseStore';
 import { useUserStore } from '../stores/userStore';
-import { useAuthStore } from '../stores/authStore';
 import { CourseDetailScreenProps } from '../navigation/types';
-import { enrollInCourse, getTemplateProgress } from '../services/progressService';
-import { Recommendation } from '../utils/types';
-import { CheckCircle, Clock, Award, TrendingUp, Rocket } from 'lucide-react-native';
+import { CheckCircle, Clock, Award, TrendingUp } from 'lucide-react-native';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
+import { SAMPLE_COURSES } from '../utils/constants';
 import { PrimaryButton } from '../components/PrimaryButton';
 
 const CourseDetailScreen = ({
@@ -19,75 +17,27 @@ const CourseDetailScreen = ({
 }: CourseDetailScreenProps) => {
   const { courseId } = route.params;
   const getCourseById = useCourseStore((state) => state.getCourseById);
-  const setSelectedCourseId = useUserStore((state) => state.setSelectedCourseId);
-  const setStudentProgress = useUserStore((state) => state.setStudentProgress);
-  const setCourseProgress = useUserStore((state) => state.setCourseProgress);
-  const setSelectedPath = useUserStore((state) => state.setSelectedPath);
-  const setUserProfile = useUserStore((state) => state.setUserProfile);
   const userProfile = useUserStore((state) => state.userProfile);
-  const account = useAuthStore((state) => state.account);
-  const [enrolling, setEnrolling] = useState(false);
 
-  const course = useMemo(() => getCourseById(courseId), [courseId, getCourseById]);
-
-  const handleStartCourse = async () => {
-    if (!course) return;
-
-    setEnrolling(true);
-
-    let progress;
-    if (account?.uid) {
-      progress = await enrollInCourse(account.uid, courseId);
-    } else {
-      progress = getTemplateProgress(courseId);
-    }
-
-    if (!progress) {
-      setEnrolling(false);
-      return;
-    }
-
-    const enrollment: Recommendation = {
-      id: `enrolled-${course.id}`,
-      title: course.title,
-      description: course.description,
-      estimatedDuration: course.duration,
-      difficulty: course.difficulty,
-      courses: [course],
-      requiredSkills: course.skills,
-      careerApplications: course.careerPaths,
-    };
-
-    setSelectedCourseId(courseId);
-    setCourseProgress(courseId, progress);
-    setStudentProgress(progress);
-    setSelectedPath(enrollment);
-
-    if (userProfile) {
-      setUserProfile({
-        ...userProfile,
-        selectedPath: enrollment,
-        progress,
-      });
-    }
-
-    setTimeout(() => {
-      setEnrolling(false);
-      navigation.navigate('Progress', { courseId });
-    }, 400);
-  };
+  const course = useMemo(
+    () =>
+      getCourseById(courseId) ||
+      SAMPLE_COURSES.find((item) => item.id === courseId),
+    [courseId, getCourseById]
+  );
 
   if (!course) {
     return (
       <ScreenWrapper>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Course not found</Text>
-          <PrimaryButton
-            label="Go Back"
+          <TouchableOpacity
+            style={styles.outlineBtn}
             onPress={() => navigation.goBack()}
-            variant="outline"
-            style={{ marginTop: spacing.lg }}
-          />
+            activeOpacity={0.85}
+          >
+            <Text style={styles.outlineBtnText}>Go Back</Text>
+          </TouchableOpacity>
         </View>
       </ScreenWrapper>
     );
@@ -101,7 +51,7 @@ const CourseDetailScreen = ({
       >
         <AnimatedFadeIn index={0}>
           <LinearGradient
-            colors={[colors.gradientStart, colors.gradientEnd]}
+            colors={[colors.highlight, '#5B97B8']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.heroCard}
@@ -117,6 +67,11 @@ const CourseDetailScreen = ({
                 <Award size={18} color="#FFF" />
                 <Text style={styles.heroStatText}>{course.skills.length} skills</Text>
               </View>
+              {course.estimatedTuitionPerTerm ? (
+                <Text style={styles.heroStatText}>
+                  {course.estimatedTuitionPerTerm}/term
+                </Text>
+              ) : null}
             </View>
           </LinearGradient>
         </AnimatedFadeIn>
@@ -126,7 +81,7 @@ const CourseDetailScreen = ({
             <Text style={styles.sectionTitle}>Skills you'll learn</Text>
             {course.skills.map((skill, index) => (
               <View key={skill} style={styles.skillRow}>
-                <CheckCircle size={18} color={colors.primary} />
+                <CheckCircle size={18} color={colors.highlight} />
                 <Text style={styles.skillText}>{skill}</Text>
               </View>
             ))}
@@ -157,7 +112,7 @@ const CourseDetailScreen = ({
         <AnimatedFadeIn index={3}>
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <TrendingUp size={20} color={colors.primary} />
+              <TrendingUp size={20} color={colors.highlight} />
               <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>Career paths</Text>
             </View>
             {course.careerPaths.map((path) => (
@@ -168,29 +123,13 @@ const CourseDetailScreen = ({
           </View>
         </AnimatedFadeIn>
 
-        <AnimatedFadeIn index={4}>
-          <View style={styles.infoBox}>
-            <Rocket size={20} color={colors.primary} />
-            <Text style={styles.infoText}>
-              Starting this course enrolls you in the program and opens your progress
-              tracker with subjects, semester plan, and graduation timeline.
-            </Text>
-          </View>
-        </AnimatedFadeIn>
       </ScrollView>
 
-      <AnimatedFadeIn index={5} style={styles.footer}>
-        <PrimaryButton
-          label={enrolling ? 'Enrolling...' : 'Start Course'}
-          onPress={handleStartCourse}
-          loading={enrolling}
-          icon={<Rocket size={20} color="#FFF" />}
-        />
+      <AnimatedFadeIn index={4} style={styles.footer}>
         <PrimaryButton
           label="Back to Recommendations"
           onPress={() => navigation.navigate('Recommendations')}
           variant="outline"
-          style={{ marginTop: spacing.sm }}
         />
       </AnimatedFadeIn>
     </ScreenWrapper>
@@ -203,6 +142,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing['3xl'],
   },
   heroCard: {
+    ...shadows.md,
     borderRadius: borderRadius.xl,
     padding: spacing.xl,
     marginTop: spacing.md,
@@ -211,25 +151,26 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: typography.sizes['2xl'],
     fontWeight: typography.weights.bold,
-    color: colors.text,
+    color: '#FFFFFF',
     marginBottom: spacing.sm,
   },
   heroDesc: {
     fontSize: typography.sizes.sm,
-    color: 'rgba(255,255,255,0.9)',
+    color: 'rgba(255,255,255,0.92)',
     lineHeight: 22,
     marginBottom: spacing.lg,
   },
-  heroStats: { flexDirection: 'row', gap: spacing.xl },
+  heroStats: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xl },
   heroStat: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   heroStatText: { color: '#FFF', fontWeight: typography.weights.semibold },
   section: {
-    backgroundColor: colors.background,
-    borderRadius: borderRadius.lg,
+    ...shadows.sm,
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: borderRadius.xl,
     padding: spacing.lg,
     marginBottom: spacing.lg,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: 'rgba(149, 189, 215, 0.4)',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -249,7 +190,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingVertical: spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: 'rgba(149, 189, 215, 0.35)',
   },
   skillText: {
     flex: 1,
@@ -265,7 +206,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: colors.border,
+    backgroundColor: colors.highlight,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -277,12 +218,12 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   careerChip: {
-    backgroundColor: colors.surfaceElevated,
+    backgroundColor: colors.highlightSoft,
     padding: spacing.md,
     borderRadius: borderRadius.md,
     marginBottom: spacing.sm,
     borderLeftWidth: 3,
-    borderLeftColor: colors.primary,
+    borderLeftColor: colors.highlight,
   },
   careerText: { fontSize: typography.sizes.sm, color: colors.text },
   assessmentHint: {
@@ -310,27 +251,29 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.xs,
     color: 'rgba(255,255,255,0.9)',
   },
-  infoBox: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    backgroundColor: '#F3EFFF',
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    marginBottom: spacing.xl,
-  },
-  infoText: {
-    flex: 1,
-    fontSize: typography.sizes.sm,
-    color: colors.text,
-    lineHeight: 20,
-  },
   footer: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.lg,
     paddingTop: spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
-    backgroundColor: colors.background,
+    borderTopColor: 'rgba(149, 189, 215, 0.35)',
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    gap: spacing.sm,
+  },
+  outlineBtn: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: borderRadius.lg,
+    paddingVertical: spacing.lg,
+    borderWidth: 1.5,
+    borderColor: colors.highlight,
+    backgroundColor: colors.surfaceElevated,
+    marginTop: spacing.sm,
+  },
+  outlineBtnText: {
+    color: colors.highlight,
+    fontWeight: typography.weights.bold,
+    fontSize: typography.sizes.base,
   },
   errorContainer: {
     flex: 1,

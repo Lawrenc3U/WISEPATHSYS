@@ -20,7 +20,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     <View style={styles.container}>
       <ActivityIndicator
         size={size}
-        color={colors.primary}
+        color={colors.highlight}
         style={styles.spinner}
       />
       {message && <Text style={styles.message}>{message}</Text>}
@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundcolor: colors.text,
+    backgroundColor: colors.background,
   },
   spinner: {
     marginBottom: spacing.lg,

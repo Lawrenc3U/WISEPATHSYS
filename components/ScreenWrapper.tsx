@@ -18,7 +18,7 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
   if (gradient) {
     return (
       <LinearGradient
-        colors={['#F8F6FF', '#FFFFFF', '#FFF5FA']}
+        colors={[colors.gradientStart, '#F7FBFE', colors.gradientEnd]}
         style={[styles.flex, style]}
       >
         <SafeAreaView style={styles.flex} edges={['top', 'left', 'right']}>
@@ -37,5 +37,5 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  container: { flex: 1, backgroundcolor: colors.text },
+  container: { flex: 1, backgroundColor: colors.background },
 });
