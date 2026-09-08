@@ -70,19 +70,49 @@ const ProgramAssessmentScreen: React.FC<ProgramAssessmentScreenProps> = ({
 
     setSubmitting(true);
     try {
+      // Calculate score based on weights
+      let totalScore = 0;
+      let maxPossibleScore = 0;
+
+      questions.forEach((q) => {
+        const selectedIndex = q.options?.indexOf(answers[q.id]) ?? -1;
+        const weights = q.scoringWeights;
+        
+        if (weights && weights.length > 0) {
+          // Max score for this question across all options
+          let qMax = 0;
+          weights.forEach(w => {
+            const val = w[courseId] || 0;
+            if (val > qMax) qMax = val;
+          });
+          maxPossibleScore += qMax;
+
+          // Actual score based on selected option
+          if (selectedIndex !== -1 && weights[selectedIndex]) {
+            totalScore += weights[selectedIndex][courseId] || 0;
+          }
+        }
+      });
+
+      const percentageScore = maxPossibleScore > 0 ? (totalScore / maxPossibleScore) * 100 : 100;
+      const isFitted = percentageScore >= 75;
+
       const { completion, progress } = await completeProgramAssessment(
         account.uid,
         courseId,
-        assessmentId
+        assessmentId,
+        percentageScore,
+        isFitted
       );
       addProgramAssessmentCompletion(completion);
       setCourseProgress(courseId, progress);
       if (selectedCourseId === courseId) {
         setStudentProgress(progress);
       }
+      
       Alert.alert(
         'Assessment complete',
-        'Your program progress has been updated.',
+        `You scored ${Math.round(percentageScore)}%. Result: ${isFitted ? 'FITTED' : 'NOT FITTED'} for ${courseId.toUpperCase()}.`,
         [{ text: 'OK', onPress: () => navigation.goBack() }]
       );
     } catch (error) {
@@ -206,7 +236,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
   },
   submitText: {
-    color: colors.background,
+    color: colors.text,
     fontWeight: typography.weights.bold,
   },
 });

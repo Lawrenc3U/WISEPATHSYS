@@ -114,10 +114,10 @@ const styles = StyleSheet.create({
   },
   disabled: { opacity: 0.55 },
   label: {
-    color: '#FFFFFF',
+    color: colors.text,
     fontSize: typography.sizes.base,
     fontWeight: typography.weights.bold,
   },
   labelOutline: { color: colors.primary },
-  labelSecondary: { color: '#FFFFFF' },
+  labelSecondary: { color: colors.text },
 });

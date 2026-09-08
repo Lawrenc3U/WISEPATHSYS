@@ -37,5 +37,5 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundcolor: colors.text },
 });

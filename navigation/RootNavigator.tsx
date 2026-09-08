@@ -42,11 +42,11 @@ import { useUserStore } from '../stores/userStore';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const screenOptions = {
-  headerStyle: { backgroundColor: colors.background },
+  headerStyle: { backgroundcolor: colors.text },
   headerTintColor: colors.text,
   headerTitleStyle: { fontWeight: '600' as const },
   headerShadowVisible: false,
-  contentStyle: { backgroundColor: colors.background },
+  contentStyle: { backgroundcolor: colors.text },
 };
 
 const RootNavigator: React.FC = () => {

@@ -20,6 +20,7 @@ import {
   RESIDENCE_TYPE_OPTIONS,
   PARENTAL_INCOME_OPTIONS,
   CAREER_INTEREST_OPTIONS,
+  LEARNING_GOALS_OPTIONS,
 } from '../utils/constants';
 import { StudentStatus, ResidenceType, ParentalIncomeLevel } from '../utils/types';
 
@@ -33,7 +34,7 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation }) =
   const setAccount = useAuthStore((s) => s.setAccount);
 
   const [name, setName] = useState('');
-  const [learningGoals, setLearningGoals] = useState('');
+  const [learningGoals, setLearningGoals] = useState<string[]>([]);
   const [currentSkills, setCurrentSkills] = useState(SKILL_LEVELS[0]);
   const [learningStyle, setLearningStyle] = useState(LEARNING_STYLES[3]);
   const [experience, setExperience] = useState(EXPERIENCE[0]);
@@ -57,9 +58,19 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation }) =
     );
   };
 
+  const toggleLearningGoal = (goal: string) => {
+    setLearningGoals((prev) =>
+      prev.includes(goal) ? prev.filter((g) => g !== goal) : [...prev, goal]
+    );
+  };
+
   const handleSave = async () => {
-    if (!name.trim() || !learningGoals.trim()) {
-      Alert.alert('Required', 'Please enter your name and learning goals.');
+    if (!name.trim()) {
+      Alert.alert('Required', 'Please enter your name.');
+      return;
+    }
+    if (learningGoals.length === 0) {
+      Alert.alert('Required', 'Please select at least one learning goal.');
       return;
     }
     if (careerInterests.length === 0) {
@@ -70,7 +81,7 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation }) =
     const profile = {
       name: name.trim(),
       email: account?.email,
-      learningGoals: learningGoals.trim(),
+      learningGoals,
       currentSkills,
       learningStyle,
       experience,
@@ -188,13 +199,13 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation }) =
         </Text>
 
         <AuthTextInput label="Full name" value={name} onChangeText={setName} placeholder="Juan Dela Cruz" />
-        <AuthTextInput
-          label="Learning goals"
-          value={learningGoals}
-          onChangeText={setLearningGoals}
-          placeholder="e.g. Find the right degree program for my career"
-          multiline
-          style={styles.textArea}
+
+        <Text style={styles.sectionHeader}>Learning goals</Text>
+        <Text style={styles.fieldLabel}>What do you hope to achieve? (select all that apply)</Text>
+        <MultiChipRow
+          options={LEARNING_GOALS_OPTIONS}
+          values={learningGoals}
+          onToggle={toggleLearningGoal}
         />
 
         <Text style={styles.sectionHeader}>Academic background</Text>
@@ -305,9 +316,9 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     backgroundColor: colors.surface,
   },
-  chipSelected: { borderColor: colors.primary, backgroundColor: '#F3EFFF' },
+  chipSelected: { borderColor: colors.accent, backgroundColor: colors.primary },
   chipText: { fontSize: typography.sizes.sm, color: colors.text },
-  chipTextSelected: { color: colors.primary, fontWeight: typography.weights.bold },
+  chipTextSelected: { color: colors.text, fontWeight: typography.weights.bold },
   textArea: { minHeight: 80, textAlignVertical: 'top' },
   primaryBtn: {
     backgroundColor: colors.primary,
@@ -316,7 +327,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: spacing.lg,
   },
-  primaryBtnText: { color: colors.background, fontWeight: typography.weights.bold },
+  primaryBtnText: { color: colors.text, fontWeight: typography.weights.bold },
   disabled: { opacity: 0.6 },
 });
 

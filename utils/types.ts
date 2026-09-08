@@ -34,6 +34,8 @@ export interface ProgramAssessmentCompletion {
   userId: string;
   courseId: string;
   assessmentId: string;
+  score?: number;
+  isFitted?: boolean;
   completedAt: Date;
 }
 
@@ -94,7 +96,7 @@ export type ParentalIncomeLevel =
 export interface UserProfile {
   name: string;
   email?: string;
-  learningGoals: string;
+  learningGoals: string[];
   currentSkills: string;
   learningStyle: string;
   experience: string;

@@ -135,7 +135,7 @@ const AdminCoursesScreen: React.FC<AdminCoursesScreenProps> = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundcolor: colors.text },
   content: { padding: spacing.lg },
   addBtn: {
     flexDirection: 'row',
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     marginBottom: spacing.lg,
   },
-  addBtnText: { color: colors.background, fontWeight: typography.weights.bold },
+  addBtnText: { color: colors.text, fontWeight: typography.weights.bold },
   card: {
     backgroundColor: colors.surface,
     borderRadius: borderRadius.lg,
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md,
     padding: spacing.md,
     marginBottom: spacing.sm,
-    backgroundColor: colors.background,
+    backgroundcolor: colors.text,
   },
   textArea: { minHeight: 80 },
   formActions: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.md },
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     alignItems: 'center',
   },
-  saveBtnText: { color: colors.background, fontWeight: typography.weights.bold },
+  saveBtnText: { color: colors.text, fontWeight: typography.weights.bold },
 });
 
 export default AdminCoursesScreen;

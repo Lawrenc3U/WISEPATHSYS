@@ -118,7 +118,9 @@ export const loadUserProgramAssessmentCompletions = async (
 export const completeProgramAssessment = async (
   userId: string,
   courseId: string,
-  assessmentId: string
+  assessmentId: string,
+  score?: number,
+  isFitted?: boolean
 ): Promise<{
   completion: ProgramAssessmentCompletion;
   progress: StudentProgress;
@@ -127,6 +129,8 @@ export const completeProgramAssessment = async (
     userId,
     courseId,
     assessmentId,
+    score,
+    isFitted,
     completedAt: new Date(),
   };
 
@@ -135,6 +139,8 @@ export const completeProgramAssessment = async (
       userId,
       courseId,
       assessmentId,
+      score: score ?? null,
+      isFitted: isFitted ?? null,
       completedAt: serverTimestamp(),
     });
   }

@@ -256,7 +256,7 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundcolor: colors.text },
   content: { padding: spacing.xl, paddingBottom: spacing['2xl'] },
   header: {
     flexDirection: 'row',
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   section: {
-    backgroundColor: colors.background,
+    backgroundcolor: colors.text,
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
     borderWidth: 1,

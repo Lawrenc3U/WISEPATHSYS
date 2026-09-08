@@ -571,7 +571,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarText: {
-    color: colors.background,
+    color: colors.text,
     fontSize: typography.sizes['2xl'],
     fontWeight: typography.weights.bold,
   },
@@ -692,7 +692,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   checkmarkText: {
-    color: colors.background,
+    color: colors.text,
     fontWeight: typography.weights.bold,
   },
   strengthText: {
@@ -732,7 +732,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: typography.sizes.sm,
     fontWeight: typography.weights.semibold,
-    color: '#FFFFFF',
+    color: colors.text,
     marginRight: spacing.md,
   },
   programAssessmentChipStatus: {
@@ -786,7 +786,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   retakeButtonText: {
-    color: colors.background,
+    color: colors.text,
     fontWeight: typography.weights.bold,
     fontSize: typography.sizes.base,
   },

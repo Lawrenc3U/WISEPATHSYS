@@ -134,7 +134,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundcolor: colors.text },
   flex: { flex: 1 },
   content: { padding: spacing.xl },
   title: {
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   primaryBtnText: {
-    color: colors.background,
+    color: colors.text,
     fontWeight: typography.weights.bold,
   },
   disabled: { opacity: 0.6 },

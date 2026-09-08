@@ -229,209 +229,209 @@ export const COURSE_SCORING_WEIGHTS: Record<
 
 export const PROGRAM_COURSE_IDS = ['hospitality', 'it', 'criminal_justice'] as const;
 
-/** Per-program assessments — each recommended program has its own set */
+/** Per-program assessments — each recommended program has its own set of 5 questions */
 export const PROGRAM_ASSESSMENTS: ProgramAssessment[] = [
   {
-    id: 'hosp_orientation',
+    id: 'hosp_assessment',
     courseId: 'hospitality',
-    title: 'Hospitality Orientation',
-    description: 'Explore guest service mindset and industry basics.',
+    title: 'Hospitality Management Assessment',
+    description: 'Evaluate your fit for the Hospitality and Tourism industry.',
     questions: [
       {
-        id: 'hosp_o1',
-        text: 'What excites you most about hospitality?',
+        id: 'hosp_q1',
+        text: 'How do you handle demanding or dissatisfied customers?',
         type: 'multipleChoice',
         options: [
-          'Creating memorable guest experiences',
-          'Managing events and operations',
-          'Food and beverage leadership',
-          'Tourism and destination marketing',
+          'Listen patiently, apologize, and find a solution',
+          'Get defensive and argue back',
+          'Pass them to someone else immediately',
+          'Ignore the complaint'
         ],
+        scoringWeights: [{ hospitality: 10 }, { hospitality: 0 }, { hospitality: 3 }, { hospitality: 0 }],
       },
       {
-        id: 'hosp_o2',
-        text: 'How comfortable are you leading a front-desk or service team?',
+        id: 'hosp_q2',
+        text: 'Are you comfortable working irregular hours (weekends, holidays, night shifts)?',
         type: 'multipleChoice',
         options: [
-          'Very comfortable — I enjoy leading people',
-          'Somewhat — I am building confidence',
-          'Prefer supporting roles for now',
-          'Not sure yet',
+          'Yes, I prefer flexible or varied schedules',
+          'No, I need a strict 9-to-5 schedule',
+          'Sometimes, but not regularly',
+          'Only if absolutely necessary'
         ],
+        scoringWeights: [{ hospitality: 10 }, { hospitality: 0 }, { hospitality: 5 }, { hospitality: 2 }],
+      },
+      {
+        id: 'hosp_q3',
+        text: 'How would you describe your attention to detail regarding cleanliness and presentation?',
+        type: 'multipleChoice',
+        options: [
+          'Highly meticulous and organized',
+          'Average, I notice big issues',
+          'I rarely notice the small details',
+          'I don\'t care about presentation'
+        ],
+        scoringWeights: [{ hospitality: 10 }, { hospitality: 5 }, { hospitality: 0 }, { hospitality: 0 }],
+      },
+      {
+        id: 'hosp_q4',
+        text: 'When working in a diverse team from different cultural backgrounds, you:',
+        type: 'multipleChoice',
+        options: [
+          'Embrace the diversity and learn from them',
+          'Prefer working only with people similar to me',
+          'Struggle to communicate',
+          'Avoid group work'
+        ],
+        scoringWeights: [{ hospitality: 10 }, { hospitality: 0 }, { hospitality: 2 }, { hospitality: 0 }],
+      },
+      {
+        id: 'hosp_q5',
+        text: 'How do you feel about coordinating events or managing operations under pressure?',
+        type: 'multipleChoice',
+        options: [
+          'I thrive under pressure and enjoy organizing',
+          'I can handle it, but it stresses me out',
+          'I prefer calm, predictable environments',
+          'I freeze under pressure'
+        ],
+        scoringWeights: [{ hospitality: 10 }, { hospitality: 6 }, { hospitality: 2 }, { hospitality: 0 }],
       },
     ],
   },
   {
-    id: 'hosp_skills',
-    courseId: 'hospitality',
-    title: 'Service Skills Check',
-    description: 'Gauge your customer service and operations readiness.',
-    questions: [
-      {
-        id: 'hosp_s1',
-        text: 'When a guest complaint arises, you typically…',
-        type: 'multipleChoice',
-        options: [
-          'Listen calmly and resolve quickly',
-          'Escalate to a supervisor',
-          'Follow standard procedures step by step',
-          'Feel unsure but want to learn',
-        ],
-      },
-    ],
-  },
-  {
-    id: 'hosp_career',
-    courseId: 'hospitality',
-    title: 'Career Fit — Hospitality',
-    description: 'Match your goals with hospitality career paths.',
-    questions: [
-      {
-        id: 'hosp_c1',
-        text: 'Which hospitality career appeals to you most?',
-        type: 'multipleChoice',
-        options: [
-          'Hotel or resort management',
-          'Event coordination',
-          'Restaurant or F&B management',
-          'Tourism director',
-        ],
-      },
-    ],
-  },
-  {
-    id: 'it_orientation',
+    id: 'it_assessment',
     courseId: 'it',
-    title: 'IT Foundations',
-    description: 'Check your interest in computing and problem solving.',
+    title: 'Information Technology Assessment',
+    description: 'Evaluate your technical aptitude and problem-solving skills.',
     questions: [
       {
-        id: 'it_o1',
-        text: 'Which IT area interests you most?',
+        id: 'it_q1',
+        text: 'When faced with a complex logic puzzle or a broken device, you usually:',
         type: 'multipleChoice',
         options: [
-          'Software development',
-          'Cybersecurity',
-          'Networks and infrastructure',
-          'Data and databases',
+          'Break it down logically and try to fix it myself',
+          'Ask someone else to fix it',
+          'Give up quickly',
+          'Ignore the problem'
         ],
+        scoringWeights: [{ it: 10 }, { it: 3 }, { it: 0 }, { it: 0 }],
       },
       {
-        id: 'it_o2',
-        text: 'How often do you practice coding or tech projects?',
+        id: 'it_q2',
+        text: 'How comfortable are you with continuously learning new technologies and programming languages?',
         type: 'multipleChoice',
         options: [
-          'Regularly — it is a hobby',
-          'Sometimes for school or work',
-          'Rarely but curious',
-          'Just starting out',
+          'Very comfortable, I love learning new tech',
+          'I learn when required for a job',
+          'I prefer sticking to what I already know',
+          'I dislike having to learn new tools'
         ],
+        scoringWeights: [{ it: 10 }, { it: 7 }, { it: 2 }, { it: 0 }],
+      },
+      {
+        id: 'it_q3',
+        text: 'When a program or system you are working on fails to run, what is your immediate reaction?',
+        type: 'multipleChoice',
+        options: [
+          'Check the error logs and debug the issue',
+          'Feel frustrated but keep trying randomly',
+          'Ask for help immediately without looking',
+          'Abandon the task'
+        ],
+        scoringWeights: [{ it: 10 }, { it: 5 }, { it: 2 }, { it: 0 }],
+      },
+      {
+        id: 'it_q4',
+        text: 'How do you prefer to approach a large, complex project?',
+        type: 'multipleChoice',
+        options: [
+          'Plan the architecture first, then build components',
+          'Start coding immediately and figure it out later',
+          'Follow someone else\'s lead',
+          'Procrastinate'
+        ],
+        scoringWeights: [{ it: 10 }, { it: 5 }, { it: 3 }, { it: 0 }],
+      },
+      {
+        id: 'it_q5',
+        text: 'How important is cybersecurity and data privacy to you?',
+        type: 'multipleChoice',
+        options: [
+          'Crucial, I always consider security implications',
+          'Important, but I let others handle it',
+          'Not very important',
+          'I don\'t know what that means'
+        ],
+        scoringWeights: [{ it: 10 }, { it: 6 }, { it: 0 }, { it: 0 }],
       },
     ],
   },
   {
-    id: 'it_skills',
-    courseId: 'it',
-    title: 'Technical Readiness',
-    description: 'Assess comfort with logic, systems, and learning tech.',
-    questions: [
-      {
-        id: 'it_s1',
-        text: 'When learning a new tool or language, you prefer…',
-        type: 'multipleChoice',
-        options: [
-          'Hands-on tutorials and projects',
-          'Structured courses with assignments',
-          'Pairing with mentors or peers',
-          'Reading docs and experimenting alone',
-        ],
-      },
-    ],
-  },
-  {
-    id: 'it_career',
-    courseId: 'it',
-    title: 'Career Fit — IT',
-    description: 'Align your strengths with IT career paths.',
-    questions: [
-      {
-        id: 'it_c1',
-        text: 'Your ideal first IT role would be…',
-        type: 'multipleChoice',
-        options: [
-          'Developer or engineer',
-          'Security analyst',
-          'Network or cloud administrator',
-          'IT project coordinator',
-        ],
-      },
-    ],
-  },
-  {
-    id: 'cj_orientation',
+    id: 'cj_assessment',
     courseId: 'criminal_justice',
-    title: 'Criminal Justice Overview',
-    description: 'Explore public service and justice system interest.',
+    title: 'Criminal Justice Assessment',
+    description: 'Evaluate your ethical standards and interest in law enforcement.',
     questions: [
       {
-        id: 'cj_o1',
-        text: 'What draws you to criminal justice?',
+        id: 'cj_q1',
+        text: 'If you witness a minor rule violation by a peer, what is your approach?',
         type: 'multipleChoice',
         options: [
-          'Protecting the community',
-          'Investigations and forensics',
-          'Legal and procedural work',
-          'Corrections and rehabilitation',
+          'Report it or address it according to protocol',
+          'Ignore it if no one gets hurt',
+          'Join in',
+          'Let someone else deal with it'
         ],
+        scoringWeights: [{ criminal_justice: 10 }, { criminal_justice: 3 }, { criminal_justice: 0 }, { criminal_justice: 2 }],
       },
       {
-        id: 'cj_o2',
-        text: 'How do you handle high-pressure situations?',
+        id: 'cj_q2',
+        text: 'How do you handle physical and mental stress in high-risk environments?',
         type: 'multipleChoice',
         options: [
-          'Stay calm and follow protocol',
-          'Think quickly and adapt',
-          'Rely on team communication',
-          'Still developing those skills',
+          'I maintain composure and rely on my training',
+          'I get anxious but try to manage',
+          'I easily panic',
+          'I avoid stressful situations entirely'
         ],
+        scoringWeights: [{ criminal_justice: 10 }, { criminal_justice: 5 }, { criminal_justice: 0 }, { criminal_justice: 0 }],
       },
-    ],
-  },
-  {
-    id: 'cj_skills',
-    courseId: 'criminal_justice',
-    title: 'Ethics & Procedure Check',
-    description: 'Reflect on integrity and attention to detail.',
-    questions: [
       {
-        id: 'cj_s1',
-        text: 'Accuracy and ethics in documentation are…',
+        id: 'cj_q3',
+        text: 'How important is strict adherence to rules and laws to you?',
         type: 'multipleChoice',
         options: [
-          'Essential — I am very detail-oriented',
-          'Important — I double-check my work',
-          'Something I am learning',
-          'New to me but willing to learn',
+          'Very important, laws must be upheld',
+          'Important, but exceptions can be made',
+          'I believe rules are meant to be bent',
+          'I disagree with most rules'
         ],
+        scoringWeights: [{ criminal_justice: 10 }, { criminal_justice: 5 }, { criminal_justice: 0 }, { criminal_justice: 0 }],
       },
-    ],
-  },
-  {
-    id: 'cj_career',
-    courseId: 'criminal_justice',
-    title: 'Career Fit — Criminal Justice',
-    description: 'Match your goals with justice careers.',
-    questions: [
       {
-        id: 'cj_c1',
-        text: 'Which path interests you most?',
+        id: 'cj_q4',
+        text: 'When conducting an investigation or gathering facts, you usually:',
         type: 'multipleChoice',
         options: [
-          'Law enforcement officer',
-          'Detective or investigator',
-          'Forensic analyst',
-          'Legal or corrections specialist',
+          'Are objective, thorough, and unbiased',
+          'Rely heavily on intuition over facts',
+          'Jump to conclusions quickly',
+          'Struggle to pay attention to evidence'
         ],
+        scoringWeights: [{ criminal_justice: 10 }, { criminal_justice: 4 }, { criminal_justice: 0 }, { criminal_justice: 0 }],
+      },
+      {
+        id: 'cj_q5',
+        text: 'What is your primary motivation for entering the criminal justice field?',
+        type: 'multipleChoice',
+        options: [
+          'To protect society and seek justice',
+          'The thrill and excitement',
+          'Job security',
+          'I don\'t have another option'
+        ],
+        scoringWeights: [{ criminal_justice: 10 }, { criminal_justice: 5 }, { criminal_justice: 3 }, { criminal_justice: 0 }],
       },
     ],
   },
@@ -573,4 +573,15 @@ export const CAREER_INTEREST_OPTIONS = [
   'Arts, Media & Design',
   'Government & Public Service',
   'Science & Research',
+];
+
+export const LEARNING_GOALS_OPTIONS = [
+  'Gain hands-on skills for immediate employment',
+  'Prepare for advanced studies (e.g. Master\'s, Law, Med)',
+  'Build a strong theoretical foundation',
+  'Learn leadership and management skills',
+  'Master technical or digital tools',
+  'Improve communication and soft skills',
+  'Understand industry standards and ethics',
+  'Explore personal interests before committing',
 ];

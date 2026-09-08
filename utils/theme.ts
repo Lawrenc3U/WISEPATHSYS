@@ -1,21 +1,21 @@
 import { StyleSheet } from 'react-native';
 
 export const colors = {
-  primary: '#5B3EFE',
-  primaryLight: '#8B6FFF',
-  secondary: '#E94B9B',
-  accent: '#7C6FFF',
-  background: '#FFFFFF',
-  surface: '#F5F5F5',
-  surfaceElevated: '#FAFAFE',
-  text: '#1A1A1A',
-  textSecondary: '#666666',
-  border: '#E8E8F0',
+  primary: '#E3F2FD',
+  primaryLight: '#FFFFFF', // Lighter than primary? Primary is already very light.
+  secondary: '#FFFCE1',
+  accent: '#95BDD7',
+  background: '#E3F2FD',
+  surface: '#FFFCE1',
+  surfaceElevated: '#FFFFFF',
+  text: '#111827',
+  textSecondary: '#6B7280',
+  border: '#95BDD7',
   success: '#10B981',
   error: '#EF4444',
   warning: '#F59E0B',
-  gradientStart: '#5B3EFE',
-  gradientEnd: '#E94B9B',
+  gradientStart: '#E3F2FD',
+  gradientEnd: '#FFFCE1',
 };
 
 export const typography = {

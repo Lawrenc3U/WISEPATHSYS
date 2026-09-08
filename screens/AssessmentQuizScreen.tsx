@@ -204,7 +204,7 @@ const AssessmentQuizScreen: React.FC<AssessmentQuizScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundcolor: colors.text,
   },
   header: {
     paddingHorizontal: spacing.lg,
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   primaryButtonText: {
-    color: colors.background,
+    color: colors.text,
     fontWeight: typography.weights.bold,
     fontSize: typography.sizes.base,
   },
