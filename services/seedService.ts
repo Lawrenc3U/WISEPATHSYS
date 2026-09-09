@@ -1,5 +1,10 @@
 import { collection, doc, getDocs, setDoc } from 'firebase/firestore';
-import { getFirebaseDb, getFirebaseAuth, isFirebaseConfigured } from './firebase';
+import {
+  getFirebaseDb,
+  getFirebaseAuth,
+  isFirebaseConfigured,
+  sanitizeForFirestore,
+} from './firebase';
 import { fetchUserAccount } from './authService';
 import { QUIZ_QUESTIONS, SAMPLE_COURSES } from '../utils/constants';
 
@@ -36,7 +41,7 @@ export const seedFirestoreIfEmpty = async (): Promise<{
     if (coursesSnap.empty) {
       await Promise.all(
         SAMPLE_COURSES.map((course) =>
-          setDoc(doc(db, 'courses', course.id), course)
+          setDoc(doc(db, 'courses', course.id), sanitizeForFirestore(course))
         )
       );
       result.seededCourses = true;
@@ -47,7 +52,10 @@ export const seedFirestoreIfEmpty = async (): Promise<{
     if (questionsSnap.empty) {
       await Promise.all(
         QUIZ_QUESTIONS.map((question) =>
-          setDoc(doc(db, 'quizQuestions', question.id), question)
+          setDoc(
+            doc(db, 'quizQuestions', question.id),
+            sanitizeForFirestore(question)
+          )
         )
       );
       result.seededQuestions = true;

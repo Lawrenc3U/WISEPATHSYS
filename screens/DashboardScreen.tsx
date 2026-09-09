@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,11 @@ import {
   ScrollView,
 } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
+import Animated, {
+  useAnimatedProps,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
@@ -25,12 +30,22 @@ import {
 import { useAuthStore } from '../stores/authStore';
 import { performSignOut } from '../services/authService';
 import { confirmAction } from '../utils/confirm';
-import { SAMPLE_COURSES } from '../utils/constants';
+import { useCourseStore } from '../stores/courseStore';
+import { AnimatedProgressFill } from '../components/AnimatedProgressFill';
+import { PressableScale } from '../components/PressableScale';
+import { useReducedMotion } from '../hooks/useReducedMotion';
+import { EmptyStateSprite } from '../components/sprites';
 
 const RING_SIZE = 104;
 const RING_STROKE = 10;
 const RING_RADIUS = (RING_SIZE - RING_STROKE) / 2;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+type AnimatedCircleProps = React.ComponentProps<typeof Circle> & {
+  animatedProps?: Partial<React.ComponentProps<typeof Circle>>;
+};
+const AnimatedCircle = Animated.createAnimatedComponent(
+  Circle
+) as React.ComponentType<AnimatedCircleProps>;
 
 const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const userProfile = useUserStore((state) => state.userProfile);
@@ -40,6 +55,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   );
   const logout = useAuthStore((state) => state.logout);
   const resetUserSession = useUserStore((state) => state.resetUserSession);
+  const catalog = useCourseStore((state) => state.getCatalog());
   const [showAllPrograms, setShowAllPrograms] = useState(false);
 
   const latestResult = useMemo(
@@ -60,6 +76,18 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const topCourse = topRecommendation?.courses[0] || null;
   const topMatch = Math.max(0, Math.min(100, topRecommendation?.matchPercent || 0));
   const ringOffset = RING_CIRCUMFERENCE * (1 - topMatch / 100);
+  const animatedRingOffset = useSharedValue(RING_CIRCUMFERENCE);
+  const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    animatedRingOffset.value = reduceMotion
+      ? ringOffset
+      : withTiming(ringOffset, { duration: 850 });
+  }, [animatedRingOffset, reduceMotion, ringOffset]);
+
+  const ringAnimatedProps = useAnimatedProps(() => ({
+    strokeDashoffset: animatedRingOffset.value,
+  }));
 
   const rankingData = (latestResult?.courseRankings || [])
     .slice()
@@ -67,7 +95,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
     .slice(0, 3)
     .map((ranking) => ({
       ...ranking,
-      course: SAMPLE_COURSES.find((course) => course.id === ranking.courseId),
+      course: catalog.find((course) => course.id === ranking.courseId),
     }));
 
   const strand =
@@ -157,7 +185,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
               </View>
               <View style={styles.ringWrap}>
                 <Svg width={RING_SIZE} height={RING_SIZE}>
-                  <Circle
+                  <AnimatedCircle
                     cx={RING_SIZE / 2}
                     cy={RING_SIZE / 2}
                     r={RING_RADIUS}
@@ -174,7 +202,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
                     fill="none"
                     strokeLinecap="round"
                     strokeDasharray={`${RING_CIRCUMFERENCE} ${RING_CIRCUMFERENCE}`}
-                    strokeDashoffset={ringOffset}
+                    animatedProps={ringAnimatedProps}
                     rotation="-90"
                     origin={`${RING_SIZE / 2}, ${RING_SIZE / 2}`}
                   />
@@ -275,15 +303,15 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
         </AnimatedFadeIn>
 
         <AnimatedFadeIn index={5}>
-          <TouchableOpacity
+          <PressableScale
             style={[styles.catalogButton, shadows.sm]}
             onPress={() => setShowAllPrograms((visible) => !visible)}
-            activeOpacity={0.85}
+            pressedScale={0.985}
           >
             <View>
               <Text style={styles.catalogTitle}>Available programs</Text>
               <Text style={styles.catalogSubtitle}>
-                {SAMPLE_COURSES.length} undergraduate programs
+                {catalog.length} undergraduate programs
               </Text>
             </View>
             <View style={styles.catalogIcon}>
@@ -293,11 +321,11 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
                 <ChevronDown size={20} color={colors.highlight} />
               )}
             </View>
-          </TouchableOpacity>
+          </PressableScale>
 
           {showAllPrograms ? (
-            <View style={styles.catalogList}>
-              {SAMPLE_COURSES.map((course, index) => (
+            <AnimatedFadeIn from="fade" style={styles.catalogList}>
+              {catalog.map((course, index) => (
                 <View key={course.id} style={[styles.catalogItem, shadows.sm]}>
                   <View style={styles.catalogNumber}>
                     <Text style={styles.catalogNumberText}>{index + 1}</Text>
@@ -316,7 +344,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
                   </View>
                 </View>
               ))}
-            </View>
+            </AnimatedFadeIn>
           ) : null}
         </AnimatedFadeIn>
 
@@ -342,18 +370,18 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
                     <Text style={styles.barValue}>{item.matchPercent}%</Text>
                   </View>
                   <View style={styles.barTrack}>
-                    <View
-                      style={[
-                        styles.barFill,
-                        index > 0 && styles.barFillSecondary,
-                        { width: `${Math.max(4, item.matchPercent)}%` },
-                      ]}
+                    <AnimatedProgressFill
+                      value={Math.max(4, item.matchPercent)}
+                      delay={index * 110}
+                      color={index > 0 ? colors.accent : colors.highlight}
+                      style={styles.barFill}
                     />
                   </View>
                 </View>
               ))
             ) : (
               <View style={styles.chartEmpty}>
+                <EmptyStateSprite size={92} variant="assessment" />
                 <Text style={styles.chartEmptyText}>
                   Complete the assessment to generate your program-fit chart.
                 </Text>
@@ -624,16 +652,21 @@ const styles = StyleSheet.create({
   },
   programMeta: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
     gap: spacing.sm,
     marginBottom: spacing.md,
   },
   metaPill: {
+    maxWidth: '100%',
+    flexShrink: 1,
     backgroundColor: colors.highlightSoft,
     borderRadius: borderRadius.full,
     paddingHorizontal: spacing.md,
     paddingVertical: 6,
   },
   metaText: {
+    flexShrink: 1,
     fontSize: typography.sizes.xs,
     color: colors.highlight,
     fontWeight: typography.weights.semibold,

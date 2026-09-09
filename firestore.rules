@@ -1,8 +1,6 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-
     function isSignedIn() {
       return request.auth != null;
     }
@@ -20,7 +18,8 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
       allow create: if isOwner(userId);
-      allow update: if isOwner(userId) || isAdmin();
+      allow update: if isAdmin()
+        || (isOwner(userId) && request.resource.data.role == resource.data.role);
       allow delete: if isAdmin();
     }
 
@@ -41,6 +40,18 @@ service cloud.firestore {
         && request.resource.data.userId == request.auth.uid;
       allow update: if isProgressOwner() || ownsProgressData() || isAdmin();
       allow delete: if isProgressOwner() || ownsProgressData() || isAdmin();
+    }
+
+    match /programAssessmentCompletions/{completionId} {
+      function isCompletionOwner() {
+        return isSignedIn()
+          && completionId.matches('^' + request.auth.uid + '__.*');
+      }
+
+      allow read: if isCompletionOwner() || isAdmin();
+      allow create: if isCompletionOwner()
+        && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isCompletionOwner() || isAdmin();
     }
 
     match /courses/{courseId} {

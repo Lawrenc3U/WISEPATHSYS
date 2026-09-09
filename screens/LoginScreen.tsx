@@ -17,10 +17,10 @@ import { useUserStore } from '../stores/userStore';
 import { loadUserAssessments } from '../services/userDataService';
 import { loadAllCourseProgress, loadCourseProgress } from '../services/progressService';
 import { LoginScreenProps } from '../navigation/types';
-import { BookOpen } from 'lucide-react-native';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
 import { PrimaryButton } from '../components/PrimaryButton';
+import { CampusBadge } from '../components/sprites';
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -86,7 +86,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         >
           <AnimatedFadeIn index={0}>
             <View style={[styles.logo, shadows.sm]}>
-              <BookOpen size={40} color={colors.highlight} />
+              <CampusBadge size={72} />
             </View>
             <Text style={styles.title}>Welcome back</Text>
             <Text style={styles.subtitle}>Sign in to continue your WisePath journey</Text>

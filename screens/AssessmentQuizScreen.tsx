@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   ScrollView,
   ActivityIndicator,
@@ -25,6 +24,9 @@ import { useAuthStore } from '../stores/authStore';
 import { AssessmentQuizScreenProps } from '../navigation/types';
 import { ChevronLeft, ChevronRight, ClipboardList } from 'lucide-react-native';
 import { ScreenWrapper } from '../components/ScreenWrapper';
+import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
+import { AnimatedProgressFill } from '../components/AnimatedProgressFill';
+import { PressableScale } from '../components/PressableScale';
 
 const AssessmentQuizScreen: React.FC<AssessmentQuizScreenProps> = ({
   navigation,
@@ -179,8 +181,9 @@ const AssessmentQuizScreen: React.FC<AssessmentQuizScreenProps> = ({
             </Text>
           </View>
           <View style={styles.progressTrack}>
-            <View
-              style={[styles.progressFill, { width: `${progress * 100}%` }]}
+            <AnimatedProgressFill
+              value={progress * 100}
+              style={styles.progressFill}
             />
           </View>
           <View style={styles.dotRow}>
@@ -208,7 +211,11 @@ const AssessmentQuizScreen: React.FC<AssessmentQuizScreenProps> = ({
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={[styles.questionShell, shadows.sm]}>
+          <AnimatedFadeIn
+            key={currentQuestion.id}
+            from="fade"
+            style={[styles.questionShell, shadows.sm]}
+          >
             <QuestionCard
               question={currentQuestion}
               selectedAnswer={quizAnswers[currentQuestion.id]}
@@ -219,52 +226,52 @@ const AssessmentQuizScreen: React.FC<AssessmentQuizScreenProps> = ({
               hideProgress
               questionNumber={currentQuestionIndex + 1}
             />
-          </View>
+          </AnimatedFadeIn>
         </ScrollView>
 
         <View style={styles.footer}>
-          <TouchableOpacity
+          <PressableScale
             style={[
               styles.secondaryButton,
               currentQuestionIndex === 0 && styles.disabledButton,
             ]}
             onPress={handlePreviousQuestion}
             disabled={currentQuestionIndex === 0}
-            activeOpacity={0.75}
+            pressedScale={0.97}
           >
             <ChevronLeft size={20} color={colors.highlight} />
             <Text style={styles.secondaryButtonText}>Back</Text>
-          </TouchableOpacity>
+          </PressableScale>
 
           {isLast ? (
-            <TouchableOpacity
+            <PressableScale
               style={[
                 styles.primaryButton,
                 (!isQuizComplete || submitting) && styles.disabledButton,
               ]}
               onPress={handleSubmitQuiz}
               disabled={!isQuizComplete || submitting}
-              activeOpacity={0.85}
+              pressedScale={0.97}
             >
               {submitting ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
                 <Text style={styles.primaryButtonText}>See Top 3 Matches</Text>
               )}
-            </TouchableOpacity>
+            </PressableScale>
           ) : (
-            <TouchableOpacity
+            <PressableScale
               style={[
                 styles.primaryButton,
                 !canProceed && styles.disabledButton,
               ]}
               onPress={handleNextQuestion}
               disabled={!canProceed}
-              activeOpacity={0.85}
+              pressedScale={0.97}
             >
               <Text style={styles.primaryButtonText}>Next</Text>
               <ChevronRight size={20} color="#FFFFFF" />
-            </TouchableOpacity>
+            </PressableScale>
           )}
         </View>
     </ScreenWrapper>

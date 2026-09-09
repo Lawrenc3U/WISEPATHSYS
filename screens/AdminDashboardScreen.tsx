@@ -29,10 +29,17 @@ import {
 } from 'lucide-react-native';
 import {
   loadAdminOverviewStats,
+  loadQuizQuestionsFromFirebase,
   AdminOverviewStats,
   AdminActivityItem,
 } from '../services/adminService';
-import { isFirebaseConfigured, getFirebaseProjectId } from '../services/firebase';
+import { seedFirestoreIfEmpty } from '../services/seedService';
+import {
+  loadCoursesFromFirebase,
+  isFirebaseConfigured,
+  getFirebaseProjectId,
+} from '../services/firebase';
+import { useCourseStore } from '../stores/courseStore';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
 
@@ -43,14 +50,53 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
   const logout = useAuthStore((s) => s.logout);
   const resetUserSession = useUserStore((s) => s.resetUserSession);
 
+  const setAllCourses = useCourseStore((s) => s.setAllCourses);
+  const setQuizQuestions = useCourseStore((s) => s.setQuizQuestions);
   const [stats, setStats] = useState<AdminOverviewStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [seeding, setSeeding] = useState(false);
 
   const loadStats = useCallback(async () => {
     const data = await loadAdminOverviewStats();
     setStats(data);
   }, []);
+
+  const handleSeedDatabase = async () => {
+    setSeeding(true);
+    try {
+      const result = await seedFirestoreIfEmpty();
+      if (result.error) {
+        Alert.alert('Could not seed database', result.error);
+        return;
+      }
+      const [courses, questions] = await Promise.all([
+        loadCoursesFromFirebase(),
+        loadQuizQuestionsFromFirebase(),
+      ]);
+      setAllCourses(courses);
+      setQuizQuestions(questions);
+      await loadStats();
+      if (result.seededCourses || result.seededQuestions) {
+        Alert.alert(
+          'Database seeded',
+          'Programs and assessment questions were written to Firestore.'
+        );
+      } else {
+        Alert.alert(
+          'Already connected',
+          'Firestore already has courses and questions. Student screens will use that data.'
+        );
+      }
+    } catch (error) {
+      Alert.alert(
+        'Seed failed',
+        error instanceof Error ? error.message : 'Could not write to Firestore.'
+      );
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   useEffect(() => {
     loadStats().finally(() => setLoading(false));
@@ -220,6 +266,17 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
         )}
 
         <Text style={styles.quickLinksLabel}>Manage</Text>
+        <TouchableOpacity
+          style={[styles.seedBtn, seeding && styles.seedBtnDisabled]}
+          onPress={handleSeedDatabase}
+          disabled={seeding}
+        >
+          {seeding ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={styles.seedBtnText}>Sync catalog to Firestore</Text>
+          )}
+        </TouchableOpacity>
         <View style={styles.quickLinks}>
           <TouchableOpacity
             style={styles.quickLink}
@@ -410,6 +467,19 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.sm,
     fontWeight: typography.weights.semibold,
     color: colors.highlight,
+  },
+  seedBtn: {
+    backgroundColor: colors.highlight,
+    borderRadius: borderRadius.lg,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  seedBtnDisabled: { opacity: 0.6 },
+  seedBtnText: {
+    color: '#FFFFFF',
+    fontWeight: typography.weights.bold,
+    fontSize: typography.sizes.sm,
   },
   logoutBtn: {
     flexDirection: 'row',

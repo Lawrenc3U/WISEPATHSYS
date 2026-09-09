@@ -4,7 +4,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
 } from 'react-native';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
@@ -12,7 +11,7 @@ import { colors, spacing, borderRadius, typography, shadows } from '../utils/the
 import { RecommendationItem } from '../components/RecommendationItem';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useUserStore } from '../stores/userStore';
-import { SAMPLE_COURSES } from '../utils/constants';
+import { useCourseStore } from '../stores/courseStore';
 import { RecommendationsScreenProps } from '../navigation/types';
 import {
   ChevronRight,
@@ -21,6 +20,8 @@ import {
   LayoutDashboard,
 } from 'lucide-react-native';
 import { getAIAnalysis } from '../services/aiService';
+import { PressableScale } from '../components/PressableScale';
+import { EmptyStateSprite } from '../components/sprites';
 
 const RecommendationsScreen: React.FC<RecommendationsScreenProps> = ({
   navigation,
@@ -31,9 +32,23 @@ const RecommendationsScreen: React.FC<RecommendationsScreenProps> = ({
   const setSelectedCourseId = useUserStore((state) => state.setSelectedCourseId);
   const userProfile = useUserStore((state) => state.userProfile);
 
-  const recommendations = currentRecommendations.slice(0, 3);
-  const latestQuiz =
-    userProfile?.quizHistory?.[userProfile.quizHistory.length - 1];
+  const quizHistory = useUserStore((state) => state.quizHistory);
+  const catalog = useCourseStore((state) => state.getCatalog());
+
+  const recommendations =
+    currentRecommendations.length > 0
+      ? currentRecommendations.slice(0, 3)
+      : [...quizHistory]
+          .sort(
+            (a, b) =>
+              new Date(b.completedAt).getTime() -
+              new Date(a.completedAt).getTime()
+          )[0]
+          ?.recommendedPaths?.slice(0, 3) || [];
+  const latestQuiz = [...quizHistory].sort(
+    (a, b) =>
+      new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
+  )[0];
 
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(true);
@@ -46,7 +61,7 @@ const RecommendationsScreen: React.FC<RecommendationsScreenProps> = ({
           const analysis = await getAIAnalysis(
             userProfile,
             latestQuiz.courseRankings,
-            SAMPLE_COURSES
+            catalog
           );
           setAiAnalysis(analysis);
         } catch (error) {
@@ -60,7 +75,7 @@ const RecommendationsScreen: React.FC<RecommendationsScreenProps> = ({
       }
     };
     fetchAnalysis();
-  }, [userProfile, latestQuiz]);
+  }, [userProfile, latestQuiz, catalog]);
 
   const handleCoursePress = (courseId: string) => {
     setSelectedCourseId(courseId);
@@ -76,17 +91,20 @@ const RecommendationsScreen: React.FC<RecommendationsScreenProps> = ({
     return (
       <ScreenWrapper gradient>
         <View style={styles.emptyState}>
+          <AnimatedFadeIn from="fade">
+            <EmptyStateSprite variant="recommendations" />
+          </AnimatedFadeIn>
           <Text style={styles.emptyTitle}>No recommendations yet</Text>
           <Text style={styles.emptyText}>
             Complete your profile and assessment to see your top 3 program matches.
           </Text>
-          <TouchableOpacity
+          <PressableScale
             style={styles.primaryBtn}
             onPress={() => navigation.navigate('AssessmentQuiz')}
-            activeOpacity={0.85}
+            pressedScale={0.97}
           >
             <Text style={styles.primaryBtnText}>Take Assessment</Text>
-          </TouchableOpacity>
+          </PressableScale>
         </View>
       </ScreenWrapper>
     );
@@ -147,10 +165,10 @@ const RecommendationsScreen: React.FC<RecommendationsScreenProps> = ({
             Compare curriculum, careers, and skills
           </Text>
 
-          {SAMPLE_COURSES.map((course) => {
+          {catalog.map((course) => {
             const isTop = topMatch?.courses[0]?.id === course.id;
             return (
-              <TouchableOpacity
+              <PressableScale
                 key={course.id}
                 style={[
                   styles.courseCard,
@@ -158,7 +176,7 @@ const RecommendationsScreen: React.FC<RecommendationsScreenProps> = ({
                   isTop && styles.courseCardTop,
                 ]}
                 onPress={() => handleCoursePress(course.id)}
-                activeOpacity={0.8}
+                pressedScale={0.985}
               >
                 <View style={styles.courseCardHeader}>
                   <View style={styles.courseInfo}>
@@ -185,28 +203,28 @@ const RecommendationsScreen: React.FC<RecommendationsScreenProps> = ({
                     </Text>
                   </View>
                 </View>
-              </TouchableOpacity>
+              </PressableScale>
             );
           })}
         </AnimatedFadeIn>
 
         <AnimatedFadeIn index={7}>
           <View style={styles.ctaSection}>
-            <TouchableOpacity
+            <PressableScale
               style={styles.primaryBtn}
               onPress={handleEnroll}
-              activeOpacity={0.85}
+              pressedScale={0.97}
             >
               <Text style={styles.primaryBtnText}>View top match details</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </PressableScale>
+            <PressableScale
               style={styles.outlineBtn}
               onPress={() => navigation.navigate('Dashboard')}
-              activeOpacity={0.85}
+              pressedScale={0.97}
             >
               <LayoutDashboard size={18} color={colors.highlight} />
               <Text style={styles.outlineBtnText}>Go to Dashboard</Text>
-            </TouchableOpacity>
+            </PressableScale>
           </View>
         </AnimatedFadeIn>
       </ScrollView>

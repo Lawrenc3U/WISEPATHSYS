@@ -27,16 +27,19 @@ export const getAIAnalysis = async (
 /**
  * Computes a baseline recommendation purely from profile data before any assessment is taken.
  */
-export const getBaselineRecommendation = (profile: UserProfile): Course | null => {
+export const getBaselineRecommendation = (
+  profile: UserProfile,
+  courses: Course[] = SAMPLE_COURSES
+): Course | null => {
   if (!profile.careerInterests || profile.careerInterests.length === 0) {
     return null;
   }
 
-  // Simple heuristic matching
-  let recommendedCourse = SAMPLE_COURSES[0];
+  const catalog = courses.length > 0 ? courses : SAMPLE_COURSES;
+  let recommendedCourse = catalog[0];
   let maxScore = 0;
 
-  for (const course of SAMPLE_COURSES) {
+  for (const course of catalog) {
     let score = 0;
     
     // Check if any of their career interests loosely match the course description or career paths
@@ -55,5 +58,5 @@ export const getBaselineRecommendation = (profile: UserProfile): Course | null =
     }
   }
 
-  return maxScore > 0 ? recommendedCourse : SAMPLE_COURSES[0]; // Fallback to first course
+  return maxScore > 0 ? recommendedCourse : catalog[0];
 };

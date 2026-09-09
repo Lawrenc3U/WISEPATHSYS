@@ -8,7 +8,6 @@ import { CourseDetailScreenProps } from '../navigation/types';
 import { CheckCircle, Clock, Award, TrendingUp } from 'lucide-react-native';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
-import { SAMPLE_COURSES } from '../utils/constants';
 import { PrimaryButton } from '../components/PrimaryButton';
 
 const CourseDetailScreen = ({
@@ -20,9 +19,7 @@ const CourseDetailScreen = ({
   const userProfile = useUserStore((state) => state.userProfile);
 
   const course = useMemo(
-    () =>
-      getCourseById(courseId) ||
-      SAMPLE_COURSES.find((item) => item.id === courseId),
+    () => getCourseById(courseId),
     [courseId, getCourseById]
   );
 

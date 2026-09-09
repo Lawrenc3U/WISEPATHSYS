@@ -33,6 +33,7 @@ import {
   isAuthSignOutInProgress,
 } from '../services/authService';
 import { loadUserAssessments } from '../services/userDataService';
+import { seedFirestoreIfEmpty } from '../services/seedService';
 import { loadAllCourseProgress } from '../services/progressService';
 import { useCourseStore } from '../stores/courseStore';
 import { useAuthStore } from '../stores/authStore';
@@ -82,7 +83,10 @@ const AppNavigator = ({ account }: { account: UserAccount }) => (
     <AppStack.Screen
       name="ProfileSetup"
       component={ProfileSetupScreen}
-      options={{ title: 'Your Profile', headerBackVisible: false }}
+      options={({ route }) => ({
+        title: route.params?.mode === 'edit' ? 'Edit Profile' : 'Your Profile',
+        headerBackVisible: route.params?.mode === 'edit',
+      })}
     />
     <AppStack.Screen
       name="Start"
@@ -209,6 +213,17 @@ const RootNavigator: React.FC = () => {
 
         if (userAccount) {
           setAccount(userAccount);
+          if (userAccount.role === 'admin') {
+            const seeded = await seedFirestoreIfEmpty();
+            if (seeded.seededCourses || seeded.seededQuestions) {
+              const [courses, questions] = await Promise.all([
+                loadCoursesFromFirebase(),
+                loadQuizQuestionsFromFirebase(),
+              ]);
+              setAllCourses(courses);
+              setQuizQuestions(questions);
+            }
+          }
           const progressMap = await loadAllCourseProgress(user.uid);
           if (!active || isAuthSignOutInProgress()) return;
           setProgressByCourse(progressMap);
@@ -238,7 +253,15 @@ const RootNavigator: React.FC = () => {
       active = false;
       unsubscribe();
     };
-  }, [setAccount, setLoading, hydrateFromAccount, resetUserSession, setProgressByCourse]);
+  }, [
+    setAccount,
+    setLoading,
+    hydrateFromAccount,
+    resetUserSession,
+    setProgressByCourse,
+    setAllCourses,
+    setQuizQuestions,
+  ]);
 
   if (!isReady || isLoading) {
     return <LoadingSpinner message="Initializing WisePath..." />;

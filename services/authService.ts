@@ -117,8 +117,11 @@ export const loginWithEmail = async (
       profileComplete: false,
       createdAt: new Date(),
     };
+    const db = getFirebaseDb()!;
     await setDoc(doc(db, USERS_COLLECTION, credential.user.uid), {
-      ...account,
+      email: account.email,
+      role: account.role,
+      profileComplete: account.profileComplete,
       createdAt: serverTimestamp(),
     });
   }

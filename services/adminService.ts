@@ -5,7 +5,12 @@ import {
   deleteDoc,
   getDocs,
 } from 'firebase/firestore';
-import { getFirebaseDb, isFirebaseConfigured } from './firebase';
+import {
+  getFirebaseDb,
+  isFirebaseConfigured,
+  sanitizeForFirestore,
+} from './firebase';
+import { mergeCatalogCourses } from '../utils/catalog';
 import { Course, QuizQuestion, QuizResult } from '../utils/types';
 import { QUIZ_QUESTIONS, SAMPLE_COURSES } from '../utils/constants';
 import { loadAllAssessments } from './userDataService';
@@ -44,7 +49,7 @@ export const loadQuizQuestionsFromFirebase = async (): Promise<QuizQuestion[]> =
 export const saveCourse = async (course: Course): Promise<void> => {
   if (!isFirebaseConfigured()) return;
   const db = getFirebaseDb()!;
-  await setDoc(doc(db, 'courses', course.id), course);
+  await setDoc(doc(db, 'courses', course.id), sanitizeForFirestore(course));
 };
 
 export const deleteCourse = async (courseId: string): Promise<void> => {
@@ -56,7 +61,10 @@ export const deleteCourse = async (courseId: string): Promise<void> => {
 export const saveQuizQuestion = async (question: QuizQuestion): Promise<void> => {
   if (!isFirebaseConfigured()) return;
   const db = getFirebaseDb()!;
-  await setDoc(doc(db, 'quizQuestions', question.id), question);
+  await setDoc(
+    doc(db, 'quizQuestions', question.id),
+    sanitizeForFirestore(question)
+  );
 };
 
 export const deleteQuizQuestion = async (questionId: string): Promise<void> => {
@@ -73,7 +81,9 @@ export const getManagedCourses = async (): Promise<Course[]> => {
     const snap = await getDocs(collection(db, 'courses'));
     if (snap.empty) return SAMPLE_COURSES;
 
-    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Course));
+    return mergeCatalogCourses(
+      snap.docs.map((d) => ({ id: d.id, ...d.data() } as Course))
+    );
   } catch {
     return SAMPLE_COURSES;
   }
@@ -124,23 +134,7 @@ export const loadAdminOverviewStats = async (): Promise<AdminOverviewStats> => {
   };
 
   if (!isFirebaseConfigured()) {
-    return {
-      ...empty,
-      totalStudents: 12,
-      activeAssessments: 5,
-      totalAssessments: 18,
-      completionRate: 67,
-      totalCourses: SAMPLE_COURSES.length,
-      recentActivity: [
-        {
-          id: 'demo-1',
-          type: 'assessment',
-          title: 'Assessment completed',
-          subtitle: 'Top match: Information Technology',
-          timestamp: new Date(),
-        },
-      ],
-    };
+    return empty;
   }
 
   try {

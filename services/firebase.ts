@@ -16,6 +16,7 @@ import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Course } from '../utils/types';
 import { SAMPLE_COURSES } from '../utils/constants';
+import { mergeCatalogCourses } from '../utils/catalog';
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -172,7 +173,7 @@ export const loadCoursesFromFirebase = async (): Promise<Course[]> => {
       } as Course);
     });
 
-    return courses.length > 0 ? courses : SAMPLE_COURSES;
+    return mergeCatalogCourses(courses);
   } catch (error) {
     console.error('[Firebase] Error loading courses:', error);
     return SAMPLE_COURSES;

@@ -2,12 +2,12 @@ import React from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
 } from 'react-native';
 import { Check } from 'lucide-react-native';
 import { colors, spacing, borderRadius, typography } from '../utils/theme';
 import { QuizQuestion } from '../utils/types';
+import { PressableScale } from './PressableScale';
 
 interface QuestionCardProps {
   question: QuizQuestion;
@@ -33,14 +33,14 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
         const isSelected = selectedAnswer === indexKey;
         const letter = String.fromCharCode(65 + index);
         return (
-          <TouchableOpacity
+          <PressableScale
             key={`${question.id}-${index}`}
             style={[
               styles.optionButton,
               isSelected && styles.optionButtonSelected,
             ]}
             onPress={() => onSelectAnswer(indexKey)}
-            activeOpacity={0.75}
+            pressedScale={0.985}
           >
             <View
               style={[
@@ -62,7 +62,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
             >
               {option}
             </Text>
-          </TouchableOpacity>
+          </PressableScale>
         );
       })}
     </View>
@@ -79,14 +79,14 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
         {scales.map((scale) => {
           const isSelected = selectedAnswer === scale;
           return (
-            <TouchableOpacity
+            <PressableScale
               key={scale}
               style={[
                 styles.scaleButton,
                 isSelected && styles.scaleButtonSelected,
               ]}
               onPress={() => onSelectAnswer(scale)}
-              activeOpacity={0.75}
+              pressedScale={0.96}
             >
               <Text
                 style={[
@@ -96,7 +96,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
               >
                 {scale}
               </Text>
-            </TouchableOpacity>
+            </PressableScale>
           );
         })}
       </View>

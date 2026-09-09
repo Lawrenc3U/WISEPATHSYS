@@ -22,10 +22,18 @@ import {
   deleteCourseProgressRecord,
 } from '../services/progressService';
 import { ProfileScreenProps } from '../navigation/types';
-import { Award, Zap, Clock, Lightbulb, Trash2 } from 'lucide-react-native';
+import {
+  Award,
+  Zap,
+  Clock,
+  Lightbulb,
+  Trash2,
+  Pencil,
+} from 'lucide-react-native';
 import { QuizResult } from '../utils/types';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
+import { PressableScale } from '../components/PressableScale';
 
 const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const userProfile = useUserStore((state) => state.userProfile);
@@ -245,9 +253,21 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
         {userProfile && (
           <View style={[styles.card, shadows.md]}>
-            <View style={styles.cardHeader}>
-              <Lightbulb size={24} color={colors.highlight} />
-              <Text style={styles.cardTitle}>Your Learning Profile</Text>
+            <View style={styles.profileCardTop}>
+              <View style={[styles.cardHeader, styles.profileCardHeading]}>
+                <Lightbulb size={24} color={colors.highlight} />
+                <Text style={styles.cardTitle}>Your Learning Profile</Text>
+              </View>
+              <PressableScale
+                style={styles.editProfileButton}
+                onPress={() =>
+                  navigation.navigate('ProfileSetup', { mode: 'edit' })
+                }
+                accessibilityLabel="Edit profile information"
+              >
+                <Pencil size={15} color={colors.highlight} />
+                <Text style={styles.editProfileText}>Edit</Text>
+              </PressableScale>
             </View>
             <View style={styles.profileItem}>
               <Text style={styles.profileLabel}>Senior High Strand</Text>
@@ -388,16 +408,21 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           </View>
         )}
 
-        <TouchableOpacity
+        <PressableScale
           style={[styles.retakeButton, shadows.md]}
           onPress={handleRetake}
+          pressedScale={0.98}
         >
           <Text style={styles.retakeButtonText}>Retake Assessment</Text>
-        </TouchableOpacity>
+        </PressableScale>
 
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <PressableScale
+          style={styles.logoutButton}
+          onPress={handleLogout}
+          pressedScale={0.98}
+        >
           <Text style={styles.logoutButtonText}>Sign Out</Text>
-        </TouchableOpacity>
+        </PressableScale>
       </ScrollView>
     </ScreenWrapper>
   );
@@ -454,6 +479,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
     marginBottom: spacing.lg,
+  },
+  profileCardTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  profileCardHeading: {
+    flex: 1,
+    marginBottom: 0,
+  },
+  editProfileButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.highlightSoft,
+  },
+  editProfileText: {
+    color: colors.highlight,
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.bold,
   },
   historyCardHeader: {
     flexDirection: 'row',

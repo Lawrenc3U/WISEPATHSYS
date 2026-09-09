@@ -19,6 +19,7 @@ import { ProfileSetupScreenProps } from '../navigation/types';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
 import { PrimaryButton } from '../components/PrimaryButton';
+import { StudentGuide } from '../components/sprites';
 import {
   STUDENT_STATUS_OPTIONS,
   SHS_STRANDS,
@@ -27,7 +28,12 @@ import {
   CAREER_INTEREST_OPTIONS,
   LEARNING_GOALS_OPTIONS,
 } from '../utils/constants';
-import { StudentStatus, ResidenceType, ParentalIncomeLevel } from '../utils/types';
+import {
+  StudentStatus,
+  ResidenceType,
+  ParentalIncomeLevel,
+  UserProfile,
+} from '../utils/types';
 
 const LEARNING_STYLES = ['Visual', 'Hands-on', 'Reading', 'Mixed'];
 const SKILL_LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
@@ -130,24 +136,51 @@ const FieldBlock = ({
   </View>
 );
 
-const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation }) => {
+const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({
+  navigation,
+  route,
+}) => {
   const account = useAuthStore((s) => s.account);
   const setUserProfile = useUserStore((s) => s.setUserProfile);
+  const userProfile = useUserStore((s) => s.userProfile);
   const setAccount = useAuthStore((s) => s.setAccount);
+  const isEditing = route.params?.mode === 'edit';
 
-  const [name, setName] = useState('');
-  const [learningGoals, setLearningGoals] = useState<string[]>([]);
-  const [currentSkills, setCurrentSkills] = useState(SKILL_LEVELS[0]);
-  const [learningStyle, setLearningStyle] = useState(LEARNING_STYLES[3]);
-  const [experience, setExperience] = useState(EXPERIENCE[0]);
+  const [name, setName] = useState(userProfile?.name || '');
+  const [learningGoals, setLearningGoals] = useState<string[]>(
+    userProfile?.learningGoals || []
+  );
+  const [currentSkills, setCurrentSkills] = useState(
+    userProfile?.currentSkills || SKILL_LEVELS[0]
+  );
+  const [learningStyle, setLearningStyle] = useState(
+    userProfile?.learningStyle || LEARNING_STYLES[3]
+  );
+  const [experience, setExperience] = useState(
+    userProfile?.experience || EXPERIENCE[0]
+  );
 
-  const [studentStatus, setStudentStatus] = useState<StudentStatus>('incoming');
-  const [shsStrand, setShsStrand] = useState(SHS_STRANDS[0]);
-  const [academicAverage, setAcademicAverage] = useState('');
-  const [residenceType, setResidenceType] = useState<ResidenceType>('urban');
+  const [studentStatus, setStudentStatus] = useState<StudentStatus>(
+    userProfile?.studentStatus || 'incoming'
+  );
+  const [shsStrand, setShsStrand] = useState(
+    userProfile?.shsStrand ||
+      userProfile?.seniorHighStrand ||
+      SHS_STRANDS[0]
+  );
+  const [academicAverage, setAcademicAverage] = useState(
+    userProfile?.academicAverage || ''
+  );
+  const [residenceType, setResidenceType] = useState<ResidenceType>(
+    userProfile?.residenceType || 'urban'
+  );
   const [parentalIncomeLevel, setParentalIncomeLevel] =
-    useState<ParentalIncomeLevel>('prefer_not_to_say');
-  const [careerInterests, setCareerInterests] = useState<string[]>([]);
+    useState<ParentalIncomeLevel>(
+      userProfile?.parentalIncomeLevel || 'prefer_not_to_say'
+    );
+  const [careerInterests, setCareerInterests] = useState<string[]>(
+    userProfile?.careerInterests || []
+  );
 
   const [loading, setLoading] = useState(false);
 
@@ -179,9 +212,10 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation }) =
       return;
     }
 
-    const profile = {
+    const profile: UserProfile = {
+      ...userProfile,
       name: name.trim(),
-      email: account?.email,
+      email: account?.email || userProfile?.email,
       learningGoals,
       currentSkills,
       learningStyle,
@@ -193,7 +227,7 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation }) =
       residenceType,
       parentalIncomeLevel,
       careerInterests,
-      quizHistory: [],
+      quizHistory: userProfile?.quizHistory || [],
     };
 
     setLoading(true);
@@ -203,7 +237,11 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation }) =
         setAccount({ ...account, profileComplete: true, profile });
       }
       setUserProfile(profile);
-      navigation.replace('AssessmentQuiz');
+      if (isEditing) {
+        navigation.goBack();
+      } else {
+        navigation.replace('AssessmentQuiz');
+      }
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Could not save profile.';
@@ -225,12 +263,20 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation }) =
           showsVerticalScrollIndicator={false}
         >
           <AnimatedFadeIn index={0} style={styles.header}>
-            <Text style={styles.eyebrow}>Welcome to WisePath</Text>
-            <Text style={styles.title}>Create your profile</Text>
-            <Text style={styles.subtitle}>
-              Tell us about yourself, then take a short assessment. Together
-              they rank your top 3 program matches.
-            </Text>
+            <StudentGuide size={88} />
+            <View style={styles.headerCopy}>
+              <Text style={styles.eyebrow}>
+                {isEditing ? 'Keep your guidance accurate' : 'Welcome to WisePath'}
+              </Text>
+              <Text style={styles.title}>
+                {isEditing ? 'Edit your profile' : 'Create your profile'}
+              </Text>
+              <Text style={styles.subtitle}>
+                {isEditing
+                  ? 'Update the information used for your program recommendations.'
+                  : 'Tell us about yourself, then take a short assessment. Together they rank your top 3 program matches.'}
+              </Text>
+            </View>
           </AnimatedFadeIn>
 
           <SectionCard title="About you">
@@ -353,7 +399,7 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation }) =
           </SectionCard>
 
           <PrimaryButton
-            label="Take Assessment"
+            label={isEditing ? 'Save Changes' : 'Take Assessment'}
             onPress={handleSave}
             loading={loading}
             style={styles.cta}
@@ -372,7 +418,13 @@ const styles = StyleSheet.create({
     paddingBottom: spacing['3xl'],
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
     marginBottom: spacing.xl,
+  },
+  headerCopy: {
+    flex: 1,
   },
   eyebrow: {
     fontSize: typography.sizes.xs,

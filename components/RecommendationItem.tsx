@@ -2,12 +2,12 @@ import React from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
 } from 'react-native';
 import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
 import { Recommendation } from '../utils/types';
 import { ArrowRight, BookOpen, Medal } from 'lucide-react-native';
+import { PressableScale } from './PressableScale';
 
 interface RecommendationItemProps {
   recommendation: Recommendation;
@@ -23,14 +23,14 @@ export const RecommendationItem: React.FC<RecommendationItemProps> = ({
   const isTop = rank === 1;
 
   return (
-    <TouchableOpacity
+    <PressableScale
       style={[
         styles.container,
         shadows.sm,
         isTop && styles.containerTop,
       ]}
       onPress={onPress}
-      activeOpacity={0.85}
+      pressedScale={0.985}
     >
       <View style={styles.header}>
         <View style={[styles.iconBackground, isTop && styles.iconBackgroundTop]}>
@@ -104,7 +104,7 @@ export const RecommendationItem: React.FC<RecommendationItemProps> = ({
           <ArrowRight size={18} color={colors.highlight} />
         </View>
       </View>
-    </TouchableOpacity>
+    </PressableScale>
   );
 };
 

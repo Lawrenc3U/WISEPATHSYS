@@ -3,16 +3,19 @@ import { StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../utils/theme';
+import { DecorativeBlobs } from './sprites';
 
 interface ScreenWrapperProps {
   children: React.ReactNode;
   gradient?: boolean;
+  decorations?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
 export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
   children,
   gradient = false,
+  decorations = true,
   style,
 }) => {
   if (gradient) {
@@ -21,7 +24,8 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
         colors={[colors.gradientStart, '#F7FBFE', colors.gradientEnd]}
         style={[styles.flex, style]}
       >
-        <SafeAreaView style={styles.flex} edges={['top', 'left', 'right']}>
+        {decorations ? <DecorativeBlobs /> : null}
+        <SafeAreaView style={styles.content} edges={['top', 'left', 'right']}>
           {children}
         </SafeAreaView>
       </LinearGradient>
@@ -37,5 +41,6 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  content: { flex: 1, zIndex: 1 },
   container: { flex: 1, backgroundColor: colors.background },
 });

@@ -139,12 +139,27 @@ export const useUserStore = create<UserStore>((set) => ({
 
   hydrateFromAccount: (profile: UserProfile, history: QuizResult[] = []) =>
     set((state) => {
-      const courseId = profile.selectedPath?.courses[0]?.id || state.selectedCourseId;
+      const quizHistory =
+        history.length > 0 ? history : profile.quizHistory || [];
+      const latest = [...quizHistory].sort(
+        (a, b) =>
+          new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
+      )[0];
+      const courseId =
+        latest?.bestCourseId ||
+        profile.selectedPath?.courses[0]?.id ||
+        state.selectedCourseId;
       return {
-        userProfile: profile,
-        quizHistory: history.length > 0 ? history : profile.quizHistory || [],
+        userProfile: {
+          ...profile,
+          quizHistory,
+          selectedPath: latest?.recommendedPaths?.[0] || profile.selectedPath,
+        },
+        quizHistory,
+        currentRecommendations: latest?.recommendedPaths || [],
         selectedCourseId: courseId,
-        studentProgress: profile.progress || state.progressByCourse[courseId || ''] || null,
+        studentProgress:
+          profile.progress || state.progressByCourse[courseId || ''] || null,
       };
     }),
 }));

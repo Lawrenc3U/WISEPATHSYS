@@ -8,10 +8,11 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
 import { StartScreenProps } from '../navigation/types';
-import { Zap, BookOpen, Users, GraduationCap } from 'lucide-react-native';
+import { Zap, BookOpen, Users } from 'lucide-react-native';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
 import { PrimaryButton } from '../components/PrimaryButton';
+import { CampusBadge } from '../components/sprites';
 
 const StartScreen: React.FC<StartScreenProps> = ({ navigation }) => {
   return (
@@ -28,7 +29,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ navigation }) => {
             style={styles.hero}
           >
             <View style={styles.logoRing}>
-              <GraduationCap size={48} color="#FFF" strokeWidth={1.5} />
+              <CampusBadge size={88} />
             </View>
             <Text style={styles.heroTitle}>WisePath</Text>
             <Text style={styles.heroSubtitle}>

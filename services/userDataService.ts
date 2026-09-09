@@ -14,7 +14,32 @@ import {
   isFirebaseConfigured,
   sanitizeForFirestore,
 } from './firebase';
-import { QuizResult, Recommendation } from '../utils/types';
+import { CourseRanking, QuizResult, Recommendation } from '../utils/types';
+
+const toDate = (value: unknown): Date => {
+  if (value instanceof Date) return value;
+  if (value && typeof (value as { toDate?: () => Date }).toDate === 'function') {
+    return (value as { toDate: () => Date }).toDate();
+  }
+  if (typeof value === 'string' || typeof value === 'number') {
+    return new Date(value);
+  }
+  return new Date();
+};
+
+const mapAssessmentDoc = (
+  id: string,
+  data: Record<string, unknown>
+): QuizResult => ({
+  id,
+  userId: data.userId as string | undefined,
+  quizAnswers: (data.quizAnswers as Record<string, string>) || {},
+  strengths: (data.strengths as string[]) || [],
+  recommendedPaths: (data.recommendedPaths as Recommendation[]) || [],
+  courseRankings: (data.courseRankings as CourseRanking[]) || [],
+  bestCourseId: data.bestCourseId as string | undefined,
+  completedAt: toDate(data.completedAt),
+});
 
 export const saveAssessmentResult = async (
   userId: string,
@@ -68,25 +93,33 @@ export const loadUserAssessments = async (
 
   try {
     const db = getFirebaseDb()!;
-    const q = query(
-      collection(db, 'assessments'),
-      where('userId', '==', userId),
-      orderBy('completedAt', 'desc')
-    );
-    const snap = await getDocs(q);
-
-    return snap.docs.map((docSnap) => {
-      const data = docSnap.data();
-      return {
-        id: docSnap.id,
-        userId: data.userId,
-        quizAnswers: data.quizAnswers,
-        strengths: data.strengths,
-        recommendedPaths: data.recommendedPaths,
-        bestCourseId: data.bestCourseId,
-        completedAt: data.completedAt?.toDate?.() || new Date(),
-      } as QuizResult;
-    });
+    try {
+      const indexed = query(
+        collection(db, 'assessments'),
+        where('userId', '==', userId),
+        orderBy('completedAt', 'desc')
+      );
+      const snap = await getDocs(indexed);
+      return snap.docs.map((docSnap) =>
+        mapAssessmentDoc(docSnap.id, docSnap.data())
+      );
+    } catch (indexError) {
+      console.warn(
+        '[userDataService] assessments index missing, using unordered query:',
+        indexError
+      );
+      const fallback = query(
+        collection(db, 'assessments'),
+        where('userId', '==', userId)
+      );
+      const snap = await getDocs(fallback);
+      return snap.docs
+        .map((docSnap) => mapAssessmentDoc(docSnap.id, docSnap.data()))
+        .sort(
+          (a, b) =>
+            new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
+        );
+    }
   } catch (error) {
     console.error('[userDataService] loadUserAssessments:', error);
     return [];
@@ -100,18 +133,9 @@ export const loadAllAssessments = async (): Promise<QuizResult[]> => {
     const db = getFirebaseDb()!;
     const snap = await getDocs(collection(db, 'assessments'));
 
-    return snap.docs.map((docSnap) => {
-      const data = docSnap.data();
-      return {
-        id: docSnap.id,
-        userId: data.userId,
-        quizAnswers: data.quizAnswers,
-        strengths: data.strengths,
-        recommendedPaths: data.recommendedPaths as Recommendation[],
-        bestCourseId: data.bestCourseId,
-        completedAt: data.completedAt?.toDate?.() || new Date(),
-      };
-    });
+    return snap.docs.map((docSnap) =>
+      mapAssessmentDoc(docSnap.id, docSnap.data())
+    );
   } catch (error) {
     console.error('[userDataService] loadAllAssessments:', error);
     return [];

@@ -2,18 +2,11 @@ import React from 'react';
 import {
   Text,
   StyleSheet,
-  Pressable,
   ViewStyle,
   ActivityIndicator,
 } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
 import { colors, spacing, borderRadius, typography } from '../utils/theme';
-
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+import { PressableScale } from './PressableScale';
 
 interface PrimaryButtonProps {
   label: string;
@@ -34,35 +27,19 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
   style,
   icon,
 }) => {
-  const scale = useSharedValue(1);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
-  const handlePressIn = () => {
-    scale.value = withSpring(0.96, { damping: 15, stiffness: 300 });
-  };
-
-  const handlePressOut = () => {
-    scale.value = withSpring(1, { damping: 12, stiffness: 200 });
-  };
-
   const isDisabled = disabled || loading;
 
   return (
-    <AnimatedPressable
+    <PressableScale
       onPress={onPress}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
       disabled={isDisabled}
+      pressedScale={0.96}
       style={[
         styles.base,
         variant === 'primary' && styles.primary,
         variant === 'secondary' && styles.secondary,
         variant === 'outline' && styles.outline,
         isDisabled && styles.disabled,
-        animatedStyle,
         style,
       ]}
     >
@@ -82,7 +59,7 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
           </Text>
         </>
       )}
-    </AnimatedPressable>
+    </PressableScale>
   );
 };
 

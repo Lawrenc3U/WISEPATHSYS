@@ -14,7 +14,7 @@ import { AuthTextInput } from '../components/AuthTextInput';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
 import { PrimaryButton } from '../components/PrimaryButton';
-import { UserPlus } from 'lucide-react-native';
+import { StudentGuide } from '../components/sprites';
 import { registerWithEmail, getFirebaseAuthErrorMessage } from '../services/authService';
 import { useAuthStore } from '../stores/authStore';
 import { RegisterScreenProps } from '../navigation/types';
@@ -68,7 +68,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <AnimatedFadeIn index={0}>
             <View style={[styles.iconBadge, shadows.sm]}>
-              <UserPlus size={30} color={colors.highlight} />
+              <StudentGuide size={72} />
             </View>
             <Text style={styles.eyebrow}>Join WisePath</Text>
             <Text style={styles.title}>Create account</Text>
@@ -142,9 +142,9 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   content: { padding: spacing.xl, paddingBottom: spacing['3xl'] },
   iconBadge: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     backgroundColor: colors.surfaceElevated,
     alignItems: 'center',
     justifyContent: 'center',

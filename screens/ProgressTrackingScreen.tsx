@@ -15,6 +15,8 @@ import { loadCourseProgress } from '../services/progressService';
 import { CheckCircle2, Clock, BookOpen, Zap, Award } from 'lucide-react-native';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
+import { AnimatedProgressFill } from '../components/AnimatedProgressFill';
+import { EmptyStateSprite } from '../components/sprites';
 
 const ProgressTrackingScreen: React.FC<ProgressScreenProps> = ({ route }) => {
   const { courseId } = route.params;
@@ -59,11 +61,14 @@ const ProgressTrackingScreen: React.FC<ProgressScreenProps> = ({ route }) => {
 
   if (!course || !progress) {
     return (
-      <ScreenWrapper>
-        <Text style={styles.errorText}>
-          No progress saved for this program yet. Complete the assessment or tap
-          Start Course from course details.
-        </Text>
+      <ScreenWrapper gradient>
+        <View style={styles.emptyState}>
+          <EmptyStateSprite variant="progress" />
+          <Text style={styles.errorText}>
+            No progress saved for this program yet. Complete an assessment to
+            generate your academic progress.
+          </Text>
+        </View>
       </ScreenWrapper>
     );
   }
@@ -101,11 +106,9 @@ const ProgressTrackingScreen: React.FC<ProgressScreenProps> = ({ route }) => {
             <Text style={styles.progressLabel}>Overall Progress</Text>
             <Text style={styles.progressValue}>{progress.progressPercentage}%</Text>
             <View style={styles.progressBarContainer}>
-              <View
-                style={[
-                  styles.progressBar,
-                  { width: `${Math.min(100, progress.progressPercentage)}%` },
-                ]}
+              <AnimatedProgressFill
+                value={progress.progressPercentage}
+                style={styles.progressBar}
               />
             </View>
           </View>
@@ -365,9 +368,15 @@ const styles = StyleSheet.create({
     marginLeft: spacing.sm,
   },
   noSubjects: { fontStyle: 'italic', color: colors.textSecondary },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.xl,
+  },
   errorText: {
     textAlign: 'center',
-    margin: spacing.xl,
+    marginTop: spacing.md,
     color: colors.textSecondary,
     lineHeight: 22,
   },

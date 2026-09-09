@@ -3,7 +3,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
-  ProfileSetup: undefined;
+  ProfileSetup: { mode?: 'edit' } | undefined;
   Start: undefined;
   Dashboard: undefined;
   AssessmentQuiz: undefined;

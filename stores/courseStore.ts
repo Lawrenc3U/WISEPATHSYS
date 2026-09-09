@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Course, QuizQuestion } from '../utils/types';
 import { QUIZ_QUESTIONS } from '../utils/constants';
+import { getCatalogOrFallback } from '../utils/catalog';
 
 interface CourseStore {
   allCourses: Course[];
@@ -12,6 +13,7 @@ interface CourseStore {
   setSelectedCourse: (id: string) => void;
   setIsLoadingCourses: (loading: boolean) => void;
   getCourseById: (id: string) => Course | undefined;
+  getCatalog: () => Course[];
 }
 
 export const useCourseStore = create<CourseStore>((set, get) => ({
@@ -30,7 +32,9 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
   setIsLoadingCourses: (loading: boolean) => set({ isLoadingCourses: loading }),
 
   getCourseById: (id: string) => {
-    const state = get();
-    return state.allCourses.find((course) => course.id === id);
+    const catalog = getCatalogOrFallback(get().allCourses);
+    return catalog.find((course) => course.id === id);
   },
+
+  getCatalog: () => getCatalogOrFallback(get().allCourses),
 }));
