@@ -8,6 +8,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { colors, spacing, typography, shadows } from '../utils/theme';
 import { AuthTextInput } from '../components/AuthTextInput';
@@ -20,7 +21,8 @@ import { LoginScreenProps } from '../navigation/types';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
 import { PrimaryButton } from '../components/PrimaryButton';
-import { CampusBadge } from '../components/sprites';
+
+const wisepathLogo = require('../assets/wisepath.jpg');
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -86,7 +88,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         >
           <AnimatedFadeIn index={0}>
             <View style={[styles.logo, shadows.sm]}>
-              <CampusBadge size={72} />
+              <Image source={wisepathLogo} style={styles.logoImage} resizeMode="contain" width={100} height={100} />
             </View>
             <Text style={styles.title}>Welcome back</Text>
             <Text style={styles.subtitle}>Sign in to continue your WisePath journey</Text>
@@ -141,6 +143,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     borderWidth: 1,
     borderColor: colors.border,
+  },
+  logoImage: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
   },
   title: {
     fontSize: typography.sizes['2xl'],

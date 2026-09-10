@@ -8,6 +8,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { Check } from 'lucide-react-native';
 import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
@@ -19,7 +20,6 @@ import { ProfileSetupScreenProps } from '../navigation/types';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
 import { PrimaryButton } from '../components/PrimaryButton';
-import { StudentGuide } from '../components/sprites';
 import {
   STUDENT_STATUS_OPTIONS,
   SHS_STRANDS,
@@ -38,6 +38,7 @@ import {
 const LEARNING_STYLES = ['Visual', 'Hands-on', 'Reading', 'Mixed'];
 const SKILL_LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
 const EXPERIENCE = ['0-1 year', '1-3 years', '3+ years'];
+const wisepathLogo = require('../assets/wisepath.jpg');
 
 const ChipRow = ({
   options,
@@ -263,7 +264,7 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({
           showsVerticalScrollIndicator={false}
         >
           <AnimatedFadeIn index={0} style={styles.header}>
-            <StudentGuide size={88} />
+            <Image source={wisepathLogo} style={styles.logoImage} resizeMode="contain" />
             <View style={styles.headerCopy}>
               <Text style={styles.eyebrow}>
                 {isEditing ? 'Keep your guidance accurate' : 'Welcome to WisePath'}
@@ -422,6 +423,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
     marginBottom: spacing.xl,
+  },
+  logoImage: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
   },
   headerCopy: {
     flex: 1,

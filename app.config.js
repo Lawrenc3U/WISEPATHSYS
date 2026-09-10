@@ -12,9 +12,9 @@ export default {
     slug: "WISEPATHSYS",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/icon.png",
+    icon: "./assets/wisepath.jpg",
     splash: {
-      image: "./assets/splash.png",
+      image: "./assets/wisepath.jpg",
       resizeMode: "contain",
       backgroundColor: "#FFFFFF"
     },
@@ -27,12 +27,12 @@ export default {
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: "./assets/icon.png",
+        foregroundImage: "./assets/wisepath.jpg",
         backgroundColor: "#FFFFFF"
       }
     },
     web: {
-      favicon: "./assets/favicon.png"
+      favicon: "./assets/wisepath.jpg"
     },
     plugins: [
       [

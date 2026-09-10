@@ -8,16 +8,18 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
 import { AuthTextInput } from '../components/AuthTextInput';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
 import { PrimaryButton } from '../components/PrimaryButton';
-import { StudentGuide } from '../components/sprites';
 import { registerWithEmail, getFirebaseAuthErrorMessage } from '../services/authService';
 import { useAuthStore } from '../stores/authStore';
 import { RegisterScreenProps } from '../navigation/types';
+
+const wisepathLogo = require('../assets/wisepath.jpg');
 
 const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -68,7 +70,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <AnimatedFadeIn index={0}>
             <View style={[styles.iconBadge, shadows.sm]}>
-              <StudentGuide size={72} />
+              <Image source={wisepathLogo} style={styles.logoImage} resizeMode="contain" />
             </View>
             <Text style={styles.eyebrow}>Join WisePath</Text>
             <Text style={styles.title}>Create account</Text>
@@ -192,6 +194,11 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     borderWidth: 2,
     borderColor: colors.border,
+  },
+  logoImage: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
   },
   checkboxOn: {
     backgroundColor: colors.highlight,
