@@ -4,6 +4,7 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
+
 } from 'react-native';
 import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
 import { Course } from '../utils/types';
@@ -13,7 +14,6 @@ interface CourseCardProps {
   course: Course;
   onPress: () => void;
 }
-
 export const CourseCard: React.FC<CourseCardProps> = ({ course, onPress }) => {
   return (
     <TouchableOpacity
@@ -63,7 +63,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, onPress }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundcolor: colors.text,
+    backgroundColor: colors.text,
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
     marginBottom: spacing.lg,

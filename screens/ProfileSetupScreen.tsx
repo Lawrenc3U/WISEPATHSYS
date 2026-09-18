@@ -5,10 +5,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
   KeyboardAvoidingView,
   Platform,
-  Image,
 } from 'react-native';
 import { Check } from 'lucide-react-native';
 import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
@@ -20,6 +18,8 @@ import { ProfileSetupScreenProps } from '../navigation/types';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
 import { PrimaryButton } from '../components/PrimaryButton';
+import { StudentGuide } from '../components/sprites';
+import { ErrorBanner } from '../components/ErrorBanner';
 import {
   STUDENT_STATUS_OPTIONS,
   SHS_STRANDS,
@@ -38,7 +38,6 @@ import {
 const LEARNING_STYLES = ['Visual', 'Hands-on', 'Reading', 'Mixed'];
 const SKILL_LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
 const EXPERIENCE = ['0-1 year', '1-3 years', '3+ years'];
-const wisepathLogo = require('../assets/wisepath.jpg');
 
 const ChipRow = ({
   options,
@@ -166,8 +165,8 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({
   );
   const [shsStrand, setShsStrand] = useState(
     userProfile?.shsStrand ||
-      userProfile?.seniorHighStrand ||
-      SHS_STRANDS[0]
+    userProfile?.seniorHighStrand ||
+    SHS_STRANDS[0]
   );
   const [academicAverage, setAcademicAverage] = useState(
     userProfile?.academicAverage || ''
@@ -184,6 +183,8 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({
   );
 
   const [loading, setLoading] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   const toggleCareerInterest = (interest: string) => {
     setCareerInterests((prev) =>
@@ -200,16 +201,18 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({
   };
 
   const handleSave = async () => {
+    setSaveError(null);
+    setSaveSuccess(false);
     if (!name.trim()) {
-      Alert.alert('Required', 'Please enter your name.');
+      setSaveError('Please enter your full name.');
       return;
     }
     if (learningGoals.length === 0) {
-      Alert.alert('Required', 'Please select at least one learning goal.');
+      setSaveError('Please select at least one learning goal.');
       return;
     }
     if (careerInterests.length === 0) {
-      Alert.alert('Required', 'Please select at least one career interest area.');
+      setSaveError('Please select at least one career interest area.');
       return;
     }
 
@@ -238,15 +241,19 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({
         setAccount({ ...account, profileComplete: true, profile });
       }
       setUserProfile(profile);
-      if (isEditing) {
-        navigation.goBack();
-      } else {
-        navigation.replace('AssessmentQuiz');
-      }
+      setSaveSuccess(true);
+      // Brief success feedback before navigating
+      setTimeout(() => {
+        if (isEditing) {
+          navigation.goBack();
+        } else {
+          navigation.replace('AssessmentQuiz');
+        }
+      }, 900);
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Could not save profile.';
-      Alert.alert('Error', message);
+        error instanceof Error ? error.message : 'Could not save your profile. Try again.';
+      setSaveError(message);
     } finally {
       setLoading(false);
     }
@@ -264,7 +271,7 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({
           showsVerticalScrollIndicator={false}
         >
           <AnimatedFadeIn index={0} style={styles.header}>
-            <Image source={wisepathLogo} style={styles.logoImage} resizeMode="contain" />
+            <StudentGuide size={88} />
             <View style={styles.headerCopy}>
               <Text style={styles.eyebrow}>
                 {isEditing ? 'Keep your guidance accurate' : 'Welcome to WisePath'}
@@ -399,6 +406,19 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({
             </FieldBlock>
           </SectionCard>
 
+          {saveError && (
+            <ErrorBanner
+              message={saveError}
+              type="error"
+              onDismiss={() => setSaveError(null)}
+            />
+          )}
+          {saveSuccess && (
+            <ErrorBanner
+              message={isEditing ? 'Profile saved!' : 'Profile created!'}
+              type="success"
+            />
+          )}
           <PrimaryButton
             label={isEditing ? 'Save Changes' : 'Take Assessment'}
             onPress={handleSave}
@@ -423,11 +443,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
     marginBottom: spacing.xl,
-  },
-  logoImage: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
   },
   headerCopy: {
     flex: 1,

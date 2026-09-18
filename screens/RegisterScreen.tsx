@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Image,
@@ -18,8 +17,10 @@ import { PrimaryButton } from '../components/PrimaryButton';
 import { registerWithEmail, getFirebaseAuthErrorMessage } from '../services/authService';
 import { useAuthStore } from '../stores/authStore';
 import { RegisterScreenProps } from '../navigation/types';
+import { ErrorBanner } from '../components/ErrorBanner';
 
 const wisepathLogo = require('../assets/wisepath.jpg');
+
 
 const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -28,19 +29,21 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminCode, setAdminCode] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const setAccount = useAuthStore((s) => s.setAccount);
 
   const handleRegister = async () => {
+    setError(null);
     if (!email.trim() || !password) {
-      Alert.alert('Missing fields', 'Please fill in all required fields.');
+      setError('Please fill in all required fields.');
       return;
     }
     if (password.length < 6) {
-      Alert.alert('Weak password', 'Password must be at least 6 characters.');
+      setError('Password must be at least 6 characters.');
       return;
     }
     if (password !== confirmPassword) {
-      Alert.alert('Password mismatch', 'Passwords do not match.');
+      setError('Passwords do not match. Please try again.');
       return;
     }
 
@@ -54,8 +57,8 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
       );
       setAccount(account);
       // RootNavigator switches to AppNavigator when account is set
-    } catch (error: unknown) {
-      Alert.alert('Registration failed', getFirebaseAuthErrorMessage(error));
+    } catch (err: unknown) {
+      setError(getFirebaseAuthErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -123,13 +126,23 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
           </AnimatedFadeIn>
 
           <AnimatedFadeIn index={2}>
+            {error && (
+              <ErrorBanner
+                message={error}
+                type="error"
+                onDismiss={() => setError(null)}
+              />
+            )}
             <PrimaryButton
               label="Create Account"
               onPress={handleRegister}
               loading={loading}
             />
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.link}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Login')}
+              disabled={loading}
+            >
+              <Text style={[styles.link, loading && { opacity: 0.4 }]}>
                 Already have an account? <Text style={styles.linkBold}>Sign in</Text>
               </Text>
             </TouchableOpacity>
@@ -144,15 +157,19 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   content: { padding: spacing.xl, paddingBottom: spacing['3xl'] },
   iconBadge: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 90,
+    height: 90,
+    borderRadius: 16,
     backgroundColor: colors.surfaceElevated,
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
     marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: 'hidden',
   },
+  logoImage: { width: '100%', height: '100%' },
   eyebrow: {
     textAlign: 'center',
     color: colors.highlight,
@@ -194,11 +211,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     borderWidth: 2,
     borderColor: colors.border,
-  },
-  logoImage: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
   },
   checkboxOn: {
     backgroundColor: colors.highlight,
