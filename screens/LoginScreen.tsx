@@ -4,11 +4,11 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  ScrollView,
-  Alert,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
+import { wisepathLogo } from '../assets';
 import { colors, spacing, typography, shadows } from '../utils/theme';
 import { AuthTextInput } from '../components/AuthTextInput';
 import { loginWithEmail, getFirebaseAuthErrorMessage } from '../services/authService';
@@ -20,12 +20,13 @@ import { LoginScreenProps } from '../navigation/types';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
 import { PrimaryButton } from '../components/PrimaryButton';
-import { CampusBadge } from '../components/sprites';
+import { ErrorBanner } from '../components/ErrorBanner';
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const setAccount = useAuthStore((s) => s.setAccount);
   const hydrateFromAccount = useUserStore((s) => s.hydrateFromAccount);
   const setProgressByCourse = useUserStore((s) => s.setProgressByCourse);
@@ -33,8 +34,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const setSelectedCourseId = useUserStore((s) => s.setSelectedCourseId);
 
   const handleLogin = async () => {
+    setError(null);
     if (!email.trim() || !password) {
-      Alert.alert('Missing fields', 'Please enter email and password.');
+      setError('Please enter your email and password.');
       return;
     }
 
@@ -67,8 +69,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       }
 
       // RootNavigator switches to AppNavigator when account is set
-    } catch (error: unknown) {
-      Alert.alert('Login failed', getFirebaseAuthErrorMessage(error));
+    } catch (err: unknown) {
+      setError(getFirebaseAuthErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -78,15 +80,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     <ScreenWrapper gradient>
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView
-          contentContainerStyle={styles.content}
-          keyboardShouldPersistTaps="handled"
-        >
+        <View style={styles.inner}>
           <AnimatedFadeIn index={0}>
             <View style={[styles.logo, shadows.sm]}>
-              <CampusBadge size={72} />
+              <Image source={wisepathLogo} style={styles.logoImage} resizeMode="contain" />
             </View>
             <Text style={styles.title}>Welcome back</Text>
             <Text style={styles.subtitle}>Sign in to continue your WisePath journey</Text>
@@ -110,18 +109,28 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           </AnimatedFadeIn>
 
           <AnimatedFadeIn index={2}>
+            {error && (
+              <ErrorBanner
+                message={error}
+                type="error"
+                onDismiss={() => setError(null)}
+              />
+            )}
             <PrimaryButton
               label="Sign In"
               onPress={handleLogin}
               loading={loading}
             />
-            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.link}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Register')}
+              disabled={loading}
+            >
+              <Text style={[styles.link, loading && styles.linkDisabled]}>
                 New student? <Text style={styles.linkBold}>Create account</Text>
               </Text>
             </TouchableOpacity>
           </AnimatedFadeIn>
-        </ScrollView>
+        </View>
       </KeyboardAvoidingView>
     </ScreenWrapper>
   );
@@ -129,19 +138,24 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  content: { padding: spacing.xl, paddingTop: spacing['2xl'] },
+  inner: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: spacing.xl,
+  },
   logo: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 110,
+    height: 110,
+    borderRadius: 16,
     backgroundColor: colors.surfaceElevated,
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
   },
+  logoImage: { width: '100%', height: '100%' },
   title: {
     fontSize: typography.sizes['2xl'],
     fontWeight: typography.weights.bold,
@@ -152,15 +166,16 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.base,
     color: colors.textSecondary,
     textAlign: 'center',
-    marginTop: spacing.sm,
-    marginBottom: spacing.xl,
+    marginTop: spacing.xs,
+    marginBottom: spacing.lg,
   },
   link: {
     textAlign: 'center',
-    marginTop: spacing.xl,
+    marginTop: spacing.md,
     color: colors.textSecondary,
     fontSize: typography.sizes.sm,
   },
+  linkDisabled: { opacity: 0.4 },
   linkBold: { color: colors.highlight, fontWeight: typography.weights.bold },
 });
 
