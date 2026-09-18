@@ -27,6 +27,7 @@ import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
 import { AnimatedProgressFill } from '../components/AnimatedProgressFill';
 import { PressableScale } from '../components/PressableScale';
+import { ErrorBanner } from '../components/ErrorBanner';
 
 const AssessmentQuizScreen: React.FC<AssessmentQuizScreenProps> = ({
   navigation,
@@ -34,6 +35,7 @@ const AssessmentQuizScreen: React.FC<AssessmentQuizScreenProps> = ({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [totalQuestions] = useState(getTotalQuestions());
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const quizAnswers = useUserStore((state) => state.quizAnswers);
   const setQuizAnswer = useUserStore((state) => state.setQuizAnswer);
@@ -66,6 +68,7 @@ const AssessmentQuizScreen: React.FC<AssessmentQuizScreenProps> = ({
 
   const handleSubmitQuiz = async () => {
     if (submitting) return;
+    setSubmitError(null);
     setSubmitting(true);
     try {
       const bestCourse = getBestMatchingCourse(quizAnswers, userProfile);
@@ -135,6 +138,9 @@ const AssessmentQuizScreen: React.FC<AssessmentQuizScreenProps> = ({
       navigation.replace('Recommendations');
     } catch (error) {
       console.error('[AssessmentQuiz] Error submitting quiz:', error);
+      setSubmitError(
+        'Could not submit your assessment. Check your connection and try again.'
+      );
     } finally {
       setSubmitting(false);
     }
@@ -230,49 +236,59 @@ const AssessmentQuizScreen: React.FC<AssessmentQuizScreenProps> = ({
         </ScrollView>
 
         <View style={styles.footer}>
-          <PressableScale
-            style={[
-              styles.secondaryButton,
-              currentQuestionIndex === 0 && styles.disabledButton,
-            ]}
-            onPress={handlePreviousQuestion}
-            disabled={currentQuestionIndex === 0}
-            pressedScale={0.97}
-          >
-            <ChevronLeft size={20} color={colors.highlight} />
-            <Text style={styles.secondaryButtonText}>Back</Text>
-          </PressableScale>
-
-          {isLast ? (
-            <PressableScale
-              style={[
-                styles.primaryButton,
-                (!isQuizComplete || submitting) && styles.disabledButton,
-              ]}
-              onPress={handleSubmitQuiz}
-              disabled={!isQuizComplete || submitting}
-              pressedScale={0.97}
-            >
-              {submitting ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <Text style={styles.primaryButtonText}>See Top 3 Matches</Text>
-              )}
-            </PressableScale>
-          ) : (
-            <PressableScale
-              style={[
-                styles.primaryButton,
-                !canProceed && styles.disabledButton,
-              ]}
-              onPress={handleNextQuestion}
-              disabled={!canProceed}
-              pressedScale={0.97}
-            >
-              <Text style={styles.primaryButtonText}>Next</Text>
-              <ChevronRight size={20} color="#FFFFFF" />
-            </PressableScale>
+          {submitError && (
+            <ErrorBanner
+              message={submitError}
+              type="error"
+              onDismiss={() => setSubmitError(null)}
+              onRetry={handleSubmitQuiz}
+            />
           )}
+          <View style={styles.footerButtons}>
+            <PressableScale
+              style={[
+                styles.secondaryButton,
+                currentQuestionIndex === 0 && styles.disabledButton,
+              ]}
+              onPress={handlePreviousQuestion}
+              disabled={currentQuestionIndex === 0}
+              pressedScale={0.97}
+            >
+              <ChevronLeft size={20} color={colors.highlight} />
+              <Text style={styles.secondaryButtonText}>Back</Text>
+            </PressableScale>
+
+            {isLast ? (
+              <PressableScale
+                style={[
+                  styles.primaryButton,
+                  (!isQuizComplete || submitting) && styles.disabledButton,
+                ]}
+                onPress={handleSubmitQuiz}
+                disabled={!isQuizComplete || submitting}
+                pressedScale={0.97}
+              >
+                {submitting ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.primaryButtonText}>See Top 3 Matches</Text>
+                )}
+              </PressableScale>
+            ) : (
+              <PressableScale
+                style={[
+                  styles.primaryButton,
+                  !canProceed && styles.disabledButton,
+                ]}
+                onPress={handleNextQuestion}
+                disabled={!canProceed}
+                pressedScale={0.97}
+              >
+                <Text style={styles.primaryButtonText}>Next</Text>
+                <ChevronRight size={20} color="#FFFFFF" />
+              </PressableScale>
+            )}
+          </View>
         </View>
     </ScreenWrapper>
   );
@@ -388,14 +404,16 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   footer: {
-    flexDirection: 'row',
-    gap: spacing.md,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     paddingBottom: spacing.lg,
     borderTopWidth: 1,
     borderTopColor: 'rgba(149, 189, 215, 0.35)',
     backgroundColor: 'rgba(255,255,255,0.65)',
+  },
+  footerButtons: {
+    flexDirection: 'row',
+    gap: spacing.md,
   },
   primaryButton: {
     flex: 1.4,

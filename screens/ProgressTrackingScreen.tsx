@@ -17,6 +17,7 @@ import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
 import { AnimatedProgressFill } from '../components/AnimatedProgressFill';
 import { EmptyStateSprite } from '../components/sprites';
+import { ErrorBanner } from '../components/ErrorBanner';
 
 const ProgressTrackingScreen: React.FC<ProgressScreenProps> = ({ route }) => {
   const { courseId } = route.params;
@@ -26,6 +27,7 @@ const ProgressTrackingScreen: React.FC<ProgressScreenProps> = ({ route }) => {
   const progressByCourse = useUserStore((state) => state.progressByCourse);
   const getCourseById = useCourseStore((state) => state.getCourseById);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const course = getCourseById(courseId) || null;
   const progress = progressByCourse[courseId] ?? null;
@@ -33,6 +35,7 @@ const ProgressTrackingScreen: React.FC<ProgressScreenProps> = ({ route }) => {
   useEffect(() => {
     const load = async () => {
       setLoading(true);
+      setLoadError(null);
       try {
         if (account?.uid) {
           const data = await loadCourseProgress(account.uid, courseId);
@@ -41,6 +44,9 @@ const ProgressTrackingScreen: React.FC<ProgressScreenProps> = ({ route }) => {
             setStudentProgress(data);
           }
         }
+      } catch (err) {
+        console.error('[ProgressTracking] Failed to load progress:', err);
+        setLoadError('Could not load your progress. Check your connection and try again.');
       } finally {
         setLoading(false);
       }
@@ -54,6 +60,34 @@ const ProgressTrackingScreen: React.FC<ProgressScreenProps> = ({ route }) => {
         <View style={styles.loading}>
           <ActivityIndicator size="large" color={colors.highlight} />
           <Text style={styles.loadingText}>Loading your progress...</Text>
+        </View>
+      </ScreenWrapper>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <ScreenWrapper gradient>
+        <View style={styles.emptyState}>
+          <EmptyStateSprite variant="progress" />
+          <ErrorBanner
+            message={loadError}
+            type="error"
+            onRetry={() => {
+              setLoadError(null);
+              setLoading(true);
+              if (account?.uid) {
+                loadCourseProgress(account.uid, courseId)
+                  .then((data) => {
+                    if (data) { setCourseProgress(courseId, data); setStudentProgress(data); }
+                  })
+                  .catch(() => setLoadError('Could not load your progress. Try again.'))
+                  .finally(() => setLoading(false));
+              } else {
+                setLoading(false);
+              }
+            }}
+          />
         </View>
       </ScreenWrapper>
     );

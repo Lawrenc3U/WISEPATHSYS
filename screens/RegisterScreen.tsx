@@ -5,19 +5,20 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
+import { wisepathLogo } from '../assets';
 import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
 import { AuthTextInput } from '../components/AuthTextInput';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
 import { PrimaryButton } from '../components/PrimaryButton';
-import { StudentGuide } from '../components/sprites';
 import { registerWithEmail, getFirebaseAuthErrorMessage } from '../services/authService';
 import { useAuthStore } from '../stores/authStore';
 import { RegisterScreenProps } from '../navigation/types';
+import { ErrorBanner } from '../components/ErrorBanner';
 
 const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -26,19 +27,21 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminCode, setAdminCode] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const setAccount = useAuthStore((s) => s.setAccount);
 
   const handleRegister = async () => {
+    setError(null);
     if (!email.trim() || !password) {
-      Alert.alert('Missing fields', 'Please fill in all required fields.');
+      setError('Please fill in all required fields.');
       return;
     }
     if (password.length < 6) {
-      Alert.alert('Weak password', 'Password must be at least 6 characters.');
+      setError('Password must be at least 6 characters.');
       return;
     }
     if (password !== confirmPassword) {
-      Alert.alert('Password mismatch', 'Passwords do not match.');
+      setError('Passwords do not match. Please try again.');
       return;
     }
 
@@ -52,8 +55,8 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
       );
       setAccount(account);
       // RootNavigator switches to AppNavigator when account is set
-    } catch (error: unknown) {
-      Alert.alert('Registration failed', getFirebaseAuthErrorMessage(error));
+    } catch (err: unknown) {
+      setError(getFirebaseAuthErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -68,7 +71,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <AnimatedFadeIn index={0}>
             <View style={[styles.iconBadge, shadows.sm]}>
-              <StudentGuide size={72} />
+              <Image source={wisepathLogo} style={styles.logoImage} resizeMode="contain" />
             </View>
             <Text style={styles.eyebrow}>Join WisePath</Text>
             <Text style={styles.title}>Create account</Text>
@@ -121,13 +124,23 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
           </AnimatedFadeIn>
 
           <AnimatedFadeIn index={2}>
+            {error && (
+              <ErrorBanner
+                message={error}
+                type="error"
+                onDismiss={() => setError(null)}
+              />
+            )}
             <PrimaryButton
               label="Create Account"
               onPress={handleRegister}
               loading={loading}
             />
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.link}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Login')}
+              disabled={loading}
+            >
+              <Text style={[styles.link, loading && { opacity: 0.4 }]}>
                 Already have an account? <Text style={styles.linkBold}>Sign in</Text>
               </Text>
             </TouchableOpacity>
@@ -142,15 +155,18 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   content: { padding: spacing.xl, paddingBottom: spacing['3xl'] },
   iconBadge: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 150,
+    height: 150,
+    borderRadius: 16,
     backgroundColor: colors.surfaceElevated,
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
     marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
+  logoImage: { width: '100%', height: '100%' },
   eyebrow: {
     textAlign: 'center',
     color: colors.highlight,

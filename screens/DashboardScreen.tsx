@@ -184,29 +184,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
                 <Text style={styles.cardHint}>Profile + assessment</Text>
               </View>
               <View style={styles.ringWrap}>
-                <Svg width={RING_SIZE} height={RING_SIZE}>
-                  <AnimatedCircle
-                    cx={RING_SIZE / 2}
-                    cy={RING_SIZE / 2}
-                    r={RING_RADIUS}
-                    stroke={colors.highlightSoft}
-                    strokeWidth={RING_STROKE}
-                    fill="none"
-                  />
-                  <Circle
-                    cx={RING_SIZE / 2}
-                    cy={RING_SIZE / 2}
-                    r={RING_RADIUS}
-                    stroke={colors.highlight}
-                    strokeWidth={RING_STROKE}
-                    fill="none"
-                    strokeLinecap="round"
-                    strokeDasharray={`${RING_CIRCUMFERENCE} ${RING_CIRCUMFERENCE}`}
-                    animatedProps={ringAnimatedProps}
-                    rotation="-90"
-                    origin={`${RING_SIZE / 2}, ${RING_SIZE / 2}`}
-                  />
-                </Svg>
+                  
                 <View style={styles.ringLabel}>
                   <Text style={styles.ringValue}>{topMatch}%</Text>
                   <Text style={styles.ringCaption}>fit</Text>
