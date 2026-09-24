@@ -98,6 +98,11 @@ export interface StudentProgress {
 export interface UserProfile {
   name: string;
   email?: string;
+  /**
+   * Profile photo as a data URI (`data:image/jpeg;base64,...`).
+   * Kept small (resized before save) to stay under Firestore doc limits.
+   */
+  photoBase64?: string;
   learningGoals: string[];
   currentSkills: string;
   learningStyle: string;

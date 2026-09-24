@@ -2,11 +2,10 @@ module.exports = function (api) {
   api.cache(true);
 
   return {
-    presets: [
-      ["babel-preset-expo", { jsxImportSource: "nativewind" }],
-      "nativewind/babel",
-    ],
-    // Reanimated 4 uses worklets — only include this plugin once (must be last)
-    plugins: ["react-native-worklets/plugin"],
+    // Keep Expo's default JSX runtime. NativeWind's jsxImportSource was
+    // configured without Metro CSS wiring and can blank the entire UI.
+    presets: ['babel-preset-expo'],
+    // Reanimated 4 / worklets — must be listed last
+    plugins: ['react-native-worklets/plugin'],
   };
 };

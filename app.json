@@ -5,6 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/wisepath.jpg",
+    "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/wisepath.jpg",
       "resizeMode": "contain",
@@ -12,8 +13,18 @@
     },
     "scheme": "wisepath",
     "plugins": [
-      "expo-font"
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow WisePath to access your photos for your profile picture."
+        }
+      ],
+      "expo-splash-screen"
     ],
+    "ios": {
+      "supportsTablet": true
+    },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/wisepath.jpg",

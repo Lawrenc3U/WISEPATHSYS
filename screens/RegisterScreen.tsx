@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     marginBottom: spacing.lg,
     borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.35)',
+    borderColor: colors.line,
   },
   roleToggle: {
     flexDirection: 'row',

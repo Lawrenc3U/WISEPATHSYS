@@ -254,7 +254,7 @@ const AssessmentQuizScreen: React.FC<AssessmentQuizScreenProps> = ({
               pressedScale={0.97}
             >
               {submitting ? (
-                <ActivityIndicator color="#FFFFFF" />
+                <ActivityIndicator color={colors.surfaceElevated} />
               ) : (
                 <Text style={styles.primaryButtonText}>See Top 3 Matches</Text>
               )}
@@ -270,7 +270,7 @@ const AssessmentQuizScreen: React.FC<AssessmentQuizScreenProps> = ({
               pressedScale={0.97}
             >
               <Text style={styles.primaryButtonText}>Next</Text>
-              <ChevronRight size={20} color="#FFFFFF" />
+              <ChevronRight size={20} color={colors.surfaceElevated} />
             </PressableScale>
           )}
         </View>
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.45)',
+    borderColor: colors.line,
   },
   headerText: { flex: 1 },
   eyebrow: {
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: 'rgba(149, 189, 215, 0.45)',
+    backgroundColor: colors.lineStrong,
   },
   dotAnswered: {
     backgroundColor: colors.accent,
@@ -384,18 +384,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceElevated,
     borderRadius: borderRadius.xl,
     borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.35)',
+    borderColor: colors.line,
     overflow: 'hidden',
   },
   footer: {
     flexDirection: 'row',
+    alignItems: 'stretch',
     gap: spacing.md,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     paddingBottom: spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(149, 189, 215, 0.35)',
-    backgroundColor: 'rgba(255,255,255,0.65)',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.line,
+    backgroundColor: colors.surfaceElevated,
   },
   primaryButton: {
     flex: 1.4,
@@ -403,17 +404,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.highlight,
-    paddingVertical: spacing.lg,
+    minHeight: 52,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
     borderRadius: borderRadius.lg,
     gap: spacing.sm,
-    shadowColor: colors.highlight,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.28,
-    shadowRadius: 8,
-    elevation: 4,
   },
   primaryButtonText: {
-    color: '#FFFFFF',
+    color: colors.surfaceElevated,
     fontWeight: typography.weights.bold,
     fontSize: typography.sizes.base,
   },
@@ -423,7 +421,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.surfaceElevated,
-    paddingVertical: spacing.lg,
+    minHeight: 52,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
     borderRadius: borderRadius.lg,
     gap: spacing.xs,
     borderWidth: 1.5,

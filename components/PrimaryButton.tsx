@@ -2,6 +2,7 @@ import React from 'react';
 import {
   Text,
   StyleSheet,
+  StyleProp,
   ViewStyle,
   ActivityIndicator,
 } from 'react-native';
@@ -14,7 +15,7 @@ interface PrimaryButtonProps {
   variant?: 'primary' | 'secondary' | 'outline';
   loading?: boolean;
   disabled?: boolean;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   icon?: React.ReactNode;
 }
 
@@ -33,18 +34,20 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
     <PressableScale
       onPress={onPress}
       disabled={isDisabled}
-      pressedScale={0.96}
       style={[
         styles.base,
         variant === 'primary' && styles.primary,
         variant === 'secondary' && styles.secondary,
         variant === 'outline' && styles.outline,
-        isDisabled && styles.disabled,
         style,
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'outline' ? colors.highlight : '#FFF'} />
+        <ActivityIndicator
+          color={
+            variant === 'outline' ? colors.highlight : colors.surfaceElevated
+          }
+        />
       ) : (
         <>
           {icon}
@@ -54,6 +57,7 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
               variant === 'outline' && styles.labelOutline,
               variant === 'secondary' && styles.labelSecondary,
             ]}
+            numberOfLines={1}
           >
             {label}
           </Text>
@@ -69,29 +73,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
-    paddingVertical: spacing.lg,
+    minHeight: 52,
+    paddingVertical: spacing.md,
     paddingHorizontal: spacing.xl,
     borderRadius: borderRadius.lg,
+    alignSelf: 'stretch',
   },
   primary: {
     backgroundColor: colors.highlight,
-    shadowColor: colors.highlight,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    elevation: 6,
   },
   secondary: {
     backgroundColor: colors.secondary,
   },
   outline: {
-    backgroundColor: 'transparent',
-    borderWidth: 2,
+    backgroundColor: colors.surfaceElevated,
+    borderWidth: 1.5,
     borderColor: colors.highlight,
   },
-  disabled: { opacity: 0.55 },
   label: {
-    color: '#FFFFFF',
+    color: colors.surfaceElevated,
     fontSize: typography.sizes.base,
     fontWeight: typography.weights.bold,
   },

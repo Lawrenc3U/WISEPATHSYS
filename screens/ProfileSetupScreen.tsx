@@ -7,8 +7,10 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Image,
+  ActivityIndicator,
 } from 'react-native';
-import { Check } from 'lucide-react-native';
+import { Camera, Check } from 'lucide-react-native';
 import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
 import { AuthTextInput } from '../components/AuthTextInput';
 import { useAuthStore } from '../stores/authStore';
@@ -34,6 +36,11 @@ import {
   ParentalIncomeLevel,
   UserProfile,
 } from '../utils/types';
+import {
+  pickProfilePhotoBase64,
+  profilePhotoUri,
+  PROFILE_PHOTO_HINT,
+} from '../utils/profilePhoto';
 
 const LEARNING_STYLES = ['Visual', 'Hands-on', 'Reading', 'Mixed'];
 const SKILL_LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
@@ -181,10 +188,28 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({
   const [careerInterests, setCareerInterests] = useState<string[]>(
     userProfile?.careerInterests || []
   );
+  const [photoBase64, setPhotoBase64] = useState(userProfile?.photoBase64 || '');
+  const [pickingPhoto, setPickingPhoto] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const handlePickPhoto = async () => {
+    setPickingPhoto(true);
+    setSaveError(null);
+    try {
+      const dataUri = await pickProfilePhotoBase64();
+      if (dataUri) {
+        setPhotoBase64(dataUri);
+      }
+    } catch (error) {
+      console.error('[ProfileSetup] pick photo:', error);
+      setSaveError('Could not read that photo. Try another image.');
+    } finally {
+      setPickingPhoto(false);
+    }
+  };
 
   const toggleCareerInterest = (interest: string) => {
     setCareerInterests((prev) =>
@@ -220,6 +245,7 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({
       ...userProfile,
       name: name.trim(),
       email: account?.email || userProfile?.email,
+      photoBase64: photoBase64 || '',
       learningGoals,
       currentSkills,
       learningStyle,
@@ -288,6 +314,45 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({
           </AnimatedFadeIn>
 
           <SectionCard title="About you">
+            <FieldBlock label="Profile picture">
+              <TouchableOpacity
+                style={styles.photoPicker}
+                onPress={handlePickPhoto}
+                disabled={pickingPhoto}
+                activeOpacity={0.8}
+                accessibilityLabel="Choose profile picture"
+              >
+                {pickingPhoto ? (
+                  <View style={styles.photoPlaceholder}>
+                    <ActivityIndicator color={colors.highlight} />
+                  </View>
+                ) : profilePhotoUri(photoBase64) ? (
+                  <Image
+                    source={{ uri: profilePhotoUri(photoBase64)! }}
+                    style={styles.photoImage}
+                  />
+                ) : (
+                  <View style={styles.photoPlaceholder}>
+                    <Camera size={28} color={colors.highlight} />
+                  </View>
+                )}
+                <View style={styles.photoCopy}>
+                  <Text style={styles.photoAction}>
+                    {photoBase64 ? 'Change photo' : 'Add photo'}
+                  </Text>
+                  <Text style={styles.photoHint}>{PROFILE_PHOTO_HINT}</Text>
+                </View>
+              </TouchableOpacity>
+              {photoBase64 ? (
+                <TouchableOpacity
+                  onPress={() => setPhotoBase64('')}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Text style={styles.photoRemove}>Remove photo</Text>
+                </TouchableOpacity>
+              ) : null}
+            </FieldBlock>
+
             <AuthTextInput
               label="Full name"
               value={name}
@@ -472,7 +537,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     marginBottom: spacing.lg,
     borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.35)',
+    borderColor: colors.line,
   },
   cardTitle: {
     fontSize: typography.sizes.lg,
@@ -493,6 +558,48 @@ const styles = StyleSheet.create({
     fontWeight: typography.weights.semibold,
     color: colors.text,
     marginBottom: spacing.sm,
+  },
+  photoPicker: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  photoPlaceholder: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: colors.highlightSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: colors.lineStrong,
+    borderStyle: 'dashed',
+  },
+  photoImage: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: colors.highlightSoft,
+  },
+  photoCopy: {
+    flex: 1,
+    gap: 2,
+  },
+  photoAction: {
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.bold,
+    color: colors.highlight,
+  },
+  photoHint: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+    lineHeight: 16,
+  },
+  photoRemove: {
+    marginTop: spacing.sm,
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.semibold,
+    color: colors.error,
   },
   chipRow: {
     flexDirection: 'row',

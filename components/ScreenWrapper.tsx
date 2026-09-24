@@ -15,17 +15,17 @@ interface ScreenWrapperProps {
 export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
   children,
   gradient = false,
-  decorations = true,
+  decorations = false,
   style,
 }) => {
   if (gradient) {
     return (
       <LinearGradient
-        colors={[colors.gradientStart, '#F7FBFE', colors.gradientEnd]}
+        colors={[colors.gradientStart, colors.surface, colors.gradientEnd]}
         style={[styles.flex, style]}
       >
         {decorations ? <DecorativeBlobs /> : null}
-        <SafeAreaView style={styles.content} edges={['top', 'left', 'right']}>
+        <SafeAreaView style={styles.content} edges={['top', 'left', 'right', 'bottom']}>
           {children}
         </SafeAreaView>
       </LinearGradient>
@@ -33,7 +33,7 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
   }
 
   return (
-    <SafeAreaView style={[styles.container, style]} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[styles.container, style]} edges={['top', 'left', 'right', 'bottom']}>
       {children}
     </SafeAreaView>
   );

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -7,11 +7,6 @@ import {
   ScrollView,
 } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import Animated, {
-  useAnimatedProps,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
 import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
@@ -22,10 +17,12 @@ import {
   ClipboardList,
   ChevronDown,
   ChevronUp,
+  ChevronRight,
   BookOpen,
-  GraduationCap,
-  Target,
-  Sparkles,
+  Star,
+  Check,
+  Calendar,
+  Flag,
 } from 'lucide-react-native';
 import { useAuthStore } from '../stores/authStore';
 import { performSignOut } from '../services/authService';
@@ -33,19 +30,15 @@ import { confirmAction } from '../utils/confirm';
 import { useCourseStore } from '../stores/courseStore';
 import { AnimatedProgressFill } from '../components/AnimatedProgressFill';
 import { PressableScale } from '../components/PressableScale';
-import { useReducedMotion } from '../hooks/useReducedMotion';
 import { EmptyStateSprite } from '../components/sprites';
 
-const RING_SIZE = 104;
-const RING_STROKE = 10;
+const RING_SIZE = 112;
+const RING_STROKE = 9;
 const RING_RADIUS = (RING_SIZE - RING_STROKE) / 2;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
-type AnimatedCircleProps = React.ComponentProps<typeof Circle> & {
-  animatedProps?: Partial<React.ComponentProps<typeof Circle>>;
-};
-const AnimatedCircle = Animated.createAnimatedComponent(
-  Circle
-) as React.ComponentType<AnimatedCircleProps>;
+/** Open bottom gauge (~270° of a full circle). */
+const GAUGE_FRACTION = 0.75;
+const GAUGE_LENGTH = RING_CIRCUMFERENCE * GAUGE_FRACTION;
 
 const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const userProfile = useUserStore((state) => state.userProfile);
@@ -57,6 +50,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const resetUserSession = useUserStore((state) => state.resetUserSession);
   const catalog = useCourseStore((state) => state.getCatalog());
   const [showAllPrograms, setShowAllPrograms] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+  const heroOffsetY = useRef(0);
 
   const latestResult = useMemo(
     () =>
@@ -74,20 +69,11 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const topRecommendation =
     recommendations[0] || userProfile?.selectedPath || null;
   const topCourse = topRecommendation?.courses[0] || null;
-  const topMatch = Math.max(0, Math.min(100, topRecommendation?.matchPercent || 0));
-  const ringOffset = RING_CIRCUMFERENCE * (1 - topMatch / 100);
-  const animatedRingOffset = useSharedValue(RING_CIRCUMFERENCE);
-  const reduceMotion = useReducedMotion();
-
-  useEffect(() => {
-    animatedRingOffset.value = reduceMotion
-      ? ringOffset
-      : withTiming(ringOffset, { duration: 850 });
-  }, [animatedRingOffset, reduceMotion, ringOffset]);
-
-  const ringAnimatedProps = useAnimatedProps(() => ({
-    strokeDashoffset: animatedRingOffset.value,
-  }));
+  const topMatch = Math.max(
+    0,
+    Math.min(100, topRecommendation?.matchPercent || 0)
+  );
+  const ringOffset = GAUGE_LENGTH * (1 - topMatch / 100);
 
   const rankingData = (latestResult?.courseRankings || [])
     .slice()
@@ -99,13 +85,30 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
     }));
 
   const strand =
-    userProfile?.seniorHighStrand || userProfile?.shsStrand || 'Not set';
+    userProfile?.seniorHighStrand || userProfile?.shsStrand || 'Strand not set';
   const goalsCount = Array.isArray(userProfile?.learningGoals)
     ? userProfile.learningGoals.length
     : userProfile?.learningGoals
       ? 1
       : 0;
   const interestsCount = userProfile?.careerInterests?.length || 0;
+  const profileFacts = [
+    strand,
+    `${goalsCount} ${goalsCount === 1 ? 'goal' : 'goals'}`,
+    `${interestsCount} ${interestsCount === 1 ? 'interest' : 'interests'}`,
+  ].join(' · ');
+  const difficultyLabel = topCourse
+    ? `${String(topCourse.difficulty).charAt(0).toUpperCase()}${String(
+        topCourse.difficulty
+      ).slice(1)} level`
+    : null;
+
+  const scrollToHero = () => {
+    scrollRef.current?.scrollTo({
+      y: Math.max(0, heroOffsetY.current - 8),
+      animated: true,
+    });
+  };
 
   const handleLogout = () => {
     confirmAction(
@@ -120,78 +123,64 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   return (
     <ScreenWrapper gradient>
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
         <AnimatedFadeIn index={0}>
           <View style={styles.header}>
             <View style={styles.headerContent}>
-              <Text style={styles.eyebrow}>WISEPATH DASHBOARD</Text>
               <Text style={styles.greeting}>
                 {userProfile?.name
                   ? `Hello, ${userProfile.name.split(' ')[0]}`
                   : 'Hello, Student'}
               </Text>
               <Text style={styles.headerSubtitle}>
-                Here is your academic guidance summary.
+                Here's where you stand on the path to a program.
               </Text>
             </View>
-            <View style={styles.headerActions}>
-              <TouchableOpacity
-                style={[styles.iconButton, styles.logoutIconButton]}
-                onPress={handleLogout}
-                accessibilityLabel="Sign out"
-              >
-                <LogOut size={19} color={colors.error} />
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={handleLogout}
+              accessibilityLabel="Sign out"
+            >
+              <LogOut size={18} color={colors.error} />
+            </TouchableOpacity>
           </View>
         </AnimatedFadeIn>
 
         <AnimatedFadeIn index={1}>
-          <View style={[styles.summaryCard, shadows.sm]}>
-            <View style={styles.summaryHeader}>
-              <Text style={styles.cardTitle}>Profile summary</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
-                <Text style={styles.linkText}>View profile</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.summaryRow}>
-              <SummaryItem
-                icon={<GraduationCap size={18} color={colors.highlight} />}
-                label="SHS strand"
-                value={strand}
-              />
-              <SummaryItem
-                icon={<Target size={18} color={colors.highlight} />}
-                label="Goals"
-                value={`${goalsCount}`}
-              />
-              <SummaryItem
-                icon={<Sparkles size={18} color={colors.highlight} />}
-                label="Interests"
-                value={`${interestsCount}`}
-              />
-            </View>
+          <View style={styles.profilePill}>
+            <Star size={13} color={colors.highlight} fill={colors.highlight} />
+            <Text style={styles.profileFacts} numberOfLines={1}>
+              {profileFacts}
+            </Text>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Profile')}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 4 }}
+            >
+              <Text style={styles.profileLink}>Edit</Text>
+            </TouchableOpacity>
           </View>
         </AnimatedFadeIn>
 
-        <View style={styles.metricsRow}>
-          <AnimatedFadeIn index={2} style={styles.metricColumn}>
-            <View style={[styles.matchCard, shadows.sm]}>
-              <View>
-                <Text style={styles.cardTitle}>Top match</Text>
-                <Text style={styles.cardHint}>Profile + assessment</Text>
-              </View>
+        {/* Summary hero card — gauge + assessments */}
+        <AnimatedFadeIn index={2}>
+          <View style={[styles.statusCard, shadows.sm]}>
+            <View style={styles.statusMatch}>
               <View style={styles.ringWrap}>
                 <Svg width={RING_SIZE} height={RING_SIZE}>
-                  <AnimatedCircle
+                  <Circle
                     cx={RING_SIZE / 2}
                     cy={RING_SIZE / 2}
                     r={RING_RADIUS}
                     stroke={colors.highlightSoft}
                     strokeWidth={RING_STROKE}
                     fill="none"
+                    strokeLinecap="round"
+                    strokeDasharray={`${GAUGE_LENGTH} ${RING_CIRCUMFERENCE}`}
+                    rotation="135"
+                    origin={`${RING_SIZE / 2}, ${RING_SIZE / 2}`}
                   />
                   <Circle
                     cx={RING_SIZE / 2}
@@ -201,179 +190,175 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
                     strokeWidth={RING_STROKE}
                     fill="none"
                     strokeLinecap="round"
-                    strokeDasharray={`${RING_CIRCUMFERENCE} ${RING_CIRCUMFERENCE}`}
-                    animatedProps={ringAnimatedProps}
-                    rotation="-90"
+                    strokeDasharray={`${GAUGE_LENGTH} ${RING_CIRCUMFERENCE}`}
+                    strokeDashoffset={ringOffset}
+                    rotation="135"
                     origin={`${RING_SIZE / 2}, ${RING_SIZE / 2}`}
                   />
                 </Svg>
                 <View style={styles.ringLabel}>
                   <Text style={styles.ringValue}>{topMatch}%</Text>
-                  <Text style={styles.ringCaption}>fit</Text>
+                  <Text style={styles.ringCaption}>Closest match</Text>
                 </View>
               </View>
-              <Text style={styles.matchName} numberOfLines={2}>
-                {topCourse?.title || 'Take the assessment'}
-              </Text>
+              {topCourse ? (
+                <TouchableOpacity
+                  style={styles.seeBelowLink}
+                  onPress={scrollToHero}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.seeBelowText}>See it below</Text>
+                  <ChevronRight size={14} color={colors.highlight} />
+                </TouchableOpacity>
+              ) : (
+                <Text style={styles.seeBelowMuted}>Take the assessment</Text>
+              )}
             </View>
-          </AnimatedFadeIn>
 
-          <AnimatedFadeIn index={3} style={styles.metricColumn}>
-            <View style={[styles.assessmentCard, shadows.sm]}>
-              <View style={styles.assessmentIcon}>
-                <ClipboardList size={22} color={colors.highlight} />
+            <View style={styles.statusDivider} />
+
+            <View style={styles.statusAssessment}>
+              <View style={styles.clipboardWrap}>
+                <ClipboardList size={36} color={colors.text} strokeWidth={1.75} />
+                <View style={styles.clipboardBadge}>
+                  <Check size={11} color={colors.surfaceElevated} strokeWidth={3} />
+                </View>
               </View>
-              <Text style={styles.assessmentValue}>{quizHistory.length}</Text>
-              <Text style={styles.assessmentLabel}>
-                {quizHistory.length === 1 ? 'Assessment' : 'Assessments'}
-              </Text>
-              <Text style={styles.assessmentHint}>
-                {quizHistory.length > 0 ? 'completed' : 'not taken yet'}
+              <Text style={styles.completedCopy}>
+                {quizHistory.length} completed so far
               </Text>
               <TouchableOpacity
-                style={styles.assessmentButton}
+                style={styles.retakeButton}
                 onPress={() => navigation.navigate('AssessmentQuiz')}
                 activeOpacity={0.85}
               >
-                <Text style={styles.assessmentButtonText}>
+                <Text style={styles.retakeButtonText}>
                   {quizHistory.length > 0 ? 'Retake' : 'Start'}
                 </Text>
               </TouchableOpacity>
             </View>
-          </AnimatedFadeIn>
-        </View>
-
-        <AnimatedFadeIn index={4}>
-          <View style={[styles.programCard, shadows.sm]}>
-            <View style={styles.programHeader}>
-              <View style={styles.programIcon}>
-                <BookOpen size={20} color={colors.highlight} />
-              </View>
-              <View style={styles.programHeading}>
-                <Text style={styles.cardHint}>RECOMMENDED PROGRAM</Text>
-                <Text style={styles.programName} numberOfLines={2}>
-                  {topCourse?.title || 'Complete your assessment'}
-                </Text>
-              </View>
-            </View>
-            {topCourse ? (
-              <>
-                <Text style={styles.programDescription} numberOfLines={3}>
-                  {topCourse.description}
-                </Text>
-                <View style={styles.programMeta}>
-                  <View style={styles.metaPill}>
-                    <Text style={styles.metaText}>{topCourse.duration}</Text>
-                  </View>
-                  <View style={styles.metaPill}>
-                    <Text style={styles.metaText}>
-                      {topCourse.difficulty} level
-                    </Text>
-                  </View>
-                  {topCourse.estimatedTuitionPerTerm ? (
-                    <View style={styles.metaPill}>
-                      <Text style={styles.metaText}>
-                        {topCourse.estimatedTuitionPerTerm}/term
-                      </Text>
-                    </View>
-                  ) : null}
-                </View>
-                <TouchableOpacity
-                  style={styles.primaryButton}
-                  onPress={() =>
-                    navigation.navigate('CourseDetail', {
-                      courseId: topCourse.id,
-                    })
-                  }
-                  activeOpacity={0.85}
-                >
-                  <Text style={styles.primaryButtonText}>View program details</Text>
-                </TouchableOpacity>
-              </>
-            ) : (
-              <TouchableOpacity
-                style={styles.primaryButton}
-                onPress={() => navigation.navigate('AssessmentQuiz')}
-                activeOpacity={0.85}
-              >
-                <Text style={styles.primaryButtonText}>Take assessment</Text>
-              </TouchableOpacity>
-            )}
           </View>
         </AnimatedFadeIn>
 
-        <AnimatedFadeIn index={5}>
-          <PressableScale
-            style={[styles.catalogButton, shadows.sm]}
-            onPress={() => setShowAllPrograms((visible) => !visible)}
-            pressedScale={0.985}
-          >
-            <View>
-              <Text style={styles.catalogTitle}>Available programs</Text>
-              <Text style={styles.catalogSubtitle}>
-                {catalog.length} undergraduate programs
+        {/* Hero — gold wash + left bar */}
+        <AnimatedFadeIn
+          index={3}
+          onLayout={(event) => {
+            heroOffsetY.current = event.nativeEvent.layout.y;
+          }}
+        >
+          <View style={[styles.heroCard, shadows.sm]}>
+            <View style={styles.heroAccent} />
+            <View style={styles.heroBody}>
+              <View style={styles.heroHeader}>
+                <ClipboardList size={15} color={colors.highlight} />
+                <Text style={styles.heroLabel}>Recommended next step</Text>
+              </View>
+              <Text style={styles.heroName} numberOfLines={2}>
+                {topCourse?.title || 'Complete your assessment'}
               </Text>
-            </View>
-            <View style={styles.catalogIcon}>
-              {showAllPrograms ? (
-                <ChevronUp size={20} color={colors.highlight} />
+
+              {topCourse ? (
+                <>
+                  <Text style={styles.heroDescription} numberOfLines={3}>
+                    {topCourse.description}
+                  </Text>
+
+                  <View style={styles.heroFacts}>
+                    <View style={styles.heroFact}>
+                      <Calendar size={13} color={colors.textSecondary} />
+                      <Text style={styles.heroFactText}>
+                        {topCourse.duration}
+                      </Text>
+                    </View>
+                    {difficultyLabel ? (
+                      <>
+                        <Text style={styles.heroFactDot}>·</Text>
+                        <View style={styles.heroFact}>
+                          <Flag size={13} color={colors.textSecondary} />
+                          <Text style={styles.heroFactText}>
+                            {difficultyLabel}
+                          </Text>
+                        </View>
+                      </>
+                    ) : null}
+                    {topCourse.estimatedTuitionPerTerm ? (
+                      <>
+                        <Text style={styles.heroFactDot}>·</Text>
+                        <View style={styles.heroFact}>
+                          <Text style={styles.heroPeso}>₱</Text>
+                          <Text style={styles.heroFactText}>
+                            {`${topCourse.estimatedTuitionPerTerm.replace(
+                              /^₱\s*/,
+                              ''
+                            )}/term`}
+                          </Text>
+                        </View>
+                      </>
+                    ) : null}
+                  </View>
+
+                  <TouchableOpacity
+                    style={styles.navyButton}
+                    onPress={() =>
+                      navigation.navigate('CourseDetail', {
+                        courseId: topCourse.id,
+                      })
+                    }
+                    activeOpacity={0.85}
+                  >
+                    <Text style={styles.navyButtonText}>
+                      View program details
+                    </Text>
+                  </TouchableOpacity>
+                </>
               ) : (
-                <ChevronDown size={20} color={colors.highlight} />
+                <TouchableOpacity
+                  style={styles.navyButton}
+                  onPress={() => navigation.navigate('AssessmentQuiz')}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.navyButtonText}>Take assessment</Text>
+                </TouchableOpacity>
               )}
             </View>
-          </PressableScale>
-
-          {showAllPrograms ? (
-            <AnimatedFadeIn from="fade" style={styles.catalogList}>
-              {catalog.map((course, index) => (
-                <View key={course.id} style={[styles.catalogItem, shadows.sm]}>
-                  <View style={styles.catalogNumber}>
-                    <Text style={styles.catalogNumberText}>{index + 1}</Text>
-                  </View>
-                  <View style={styles.catalogItemContent}>
-                    <Text style={styles.catalogItemTitle}>{course.title}</Text>
-                    <Text style={styles.catalogItemSubtitle} numberOfLines={1}>
-                      {course.careerPaths.slice(0, 2).join(' · ')}
-                    </Text>
-                    <Text style={styles.catalogItemCost}>
-                      {course.duration}
-                      {course.estimatedTuitionPerTerm
-                        ? ` · ${course.estimatedTuitionPerTerm}/term`
-                        : ' · Tuition unavailable'}
-                    </Text>
-                  </View>
-                </View>
-              ))}
-            </AnimatedFadeIn>
-          ) : null}
+          </View>
         </AnimatedFadeIn>
 
-        <AnimatedFadeIn index={6}>
+        <AnimatedFadeIn index={4}>
           <View style={[styles.chartCard, shadows.sm]}>
             <View style={styles.chartHeader}>
-              <View>
-                <Text style={styles.cardTitle}>Program fit overview</Text>
-                <Text style={styles.cardHint}>Your latest top matches</Text>
-              </View>
-              <View style={styles.chartBadge}>
-                <Text style={styles.chartBadgeText}>TOP 3</Text>
-              </View>
+              <Text style={styles.cardTitle}>Your top matches</Text>
+              <Text style={styles.cardHint}>From your latest assessment</Text>
             </View>
 
             {rankingData.length > 0 ? (
               rankingData.map((item, index) => (
-                <View key={item.courseId} style={styles.barItem}>
+                <View
+                  key={item.courseId}
+                  style={[
+                    styles.barItem,
+                    index === rankingData.length - 1 && styles.barItemLast,
+                  ]}
+                >
                   <View style={styles.barMeta}>
                     <Text style={styles.barLabel} numberOfLines={1}>
                       {item.course?.title || item.courseId}
                     </Text>
-                    <Text style={styles.barValue}>{item.matchPercent}%</Text>
+                    <Text
+                      style={[
+                        styles.barValue,
+                        index === 0 && styles.barValueTop,
+                      ]}
+                    >
+                      {item.matchPercent}%
+                    </Text>
                   </View>
                   <View style={styles.barTrack}>
                     <AnimatedProgressFill
                       value={Math.max(4, item.matchPercent)}
                       delay={index * 110}
-                      color={index > 0 ? colors.accent : colors.highlight}
+                      color={index === 0 ? colors.highlight : colors.accent}
                       style={styles.barFill}
                     />
                   </View>
@@ -381,59 +366,92 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
               ))
             ) : (
               <View style={styles.chartEmpty}>
-                <EmptyStateSprite size={92} variant="assessment" />
+                <EmptyStateSprite size={88} variant="assessment" />
                 <Text style={styles.chartEmptyText}>
-                  Complete the assessment to generate your program-fit chart.
+                  Complete the assessment to see how your top programs compare.
                 </Text>
               </View>
             )}
           </View>
+        </AnimatedFadeIn>
+
+        <AnimatedFadeIn index={5}>
+          <PressableScale
+            style={[styles.catalogToggle, shadows.sm]}
+            onPress={() => setShowAllPrograms((visible) => !visible)}
+            pressedScale={0.985}
+          >
+            <View style={styles.catalogToggleIcon}>
+              <BookOpen size={16} color={colors.text} />
+            </View>
+            <View style={styles.catalogToggleText}>
+              <Text style={styles.catalogTitle}>Browse every program</Text>
+              <Text style={styles.catalogSubtitle}>
+                {catalog.length} undergraduate programs on WisePath
+              </Text>
+            </View>
+            {showAllPrograms ? (
+              <ChevronUp size={18} color={colors.textSecondary} />
+            ) : (
+              <ChevronDown size={18} color={colors.textSecondary} />
+            )}
+          </PressableScale>
+
+          {showAllPrograms ? (
+            <AnimatedFadeIn from="fade" style={[styles.catalogList, shadows.sm]}>
+              {catalog.map((course, index) => (
+                <TouchableOpacity
+                  key={course.id}
+                  style={[
+                    styles.catalogItem,
+                    index === catalog.length - 1 && styles.catalogItemLast,
+                  ]}
+                  onPress={() =>
+                    navigation.navigate('CourseDetail', { courseId: course.id })
+                  }
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.catalogNumber}>
+                    {String(index + 1).padStart(2, '0')}
+                  </Text>
+                  <View style={styles.catalogItemContent}>
+                    <Text style={styles.catalogItemTitle}>{course.title}</Text>
+                    <Text style={styles.catalogItemSubtitle} numberOfLines={1}>
+                      {course.careerPaths.slice(0, 2).join(', ')}
+                    </Text>
+                    <Text style={styles.catalogItemMeta}>
+                      {course.duration}
+                      {course.estimatedTuitionPerTerm
+                        ? ` · ${course.estimatedTuitionPerTerm}/term`
+                        : ' · Tuition unavailable'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </AnimatedFadeIn>
+          ) : null}
         </AnimatedFadeIn>
       </ScrollView>
     </ScreenWrapper>
   );
 };
 
-const SummaryItem = ({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) => (
-  <View style={styles.summaryItem}>
-    <View style={styles.summaryIcon}>{icon}</View>
-    <Text style={styles.summaryValue} numberOfLines={1}>
-      {value}
-    </Text>
-    <Text style={styles.summaryLabel}>{label}</Text>
-  </View>
-);
-
 const styles = StyleSheet.create({
   content: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
     paddingBottom: spacing['3xl'],
+    gap: spacing.lg,
   },
+
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    marginBottom: spacing.lg,
   },
   headerContent: {
     flex: 1,
     paddingRight: spacing.md,
-  },
-  eyebrow: {
-    fontSize: typography.sizes.xs,
-    fontWeight: typography.weights.bold,
-    color: colors.highlight,
-    letterSpacing: 0.7,
-    marginBottom: 4,
   },
   greeting: {
     fontSize: typography.sizes['2xl'],
@@ -443,40 +461,233 @@ const styles = StyleSheet.create({
   headerSubtitle: {
     fontSize: typography.sizes.sm,
     color: colors.textSecondary,
-    marginTop: 4,
+    marginTop: spacing.xs,
+    lineHeight: 20,
   },
-  headerActions: {
-    flexDirection: 'row',
-    flexShrink: 0,
-    gap: spacing.sm,
-  },
-  iconButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: colors.surfaceElevated,
-    borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.45)',
+  logoutButton: {
+    width: 36,
+    height: 36,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.errorSoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  logoutIconButton: {
-    backgroundColor: '#FEF2F2',
-    borderColor: 'rgba(239, 68, 68, 0.25)',
+
+  profilePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: colors.highlightSoft,
+    borderRadius: borderRadius.full,
+    paddingVertical: spacing.sm,
+    paddingLeft: spacing.md,
+    paddingRight: spacing.md,
   },
-  summaryCard: {
+  profileFacts: {
+    flex: 1,
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.semibold,
+    color: colors.text,
+    lineHeight: 18,
+    minWidth: 0,
+  },
+  profileLink: {
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.bold,
+    color: colors.highlight,
+  },
+
+  statusCard: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
     backgroundColor: colors.surfaceElevated,
     borderRadius: borderRadius.xl,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.35)',
+    paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.lg,
   },
-  summaryHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  statusMatch: {
+    flex: 1,
     alignItems: 'center',
+    paddingRight: spacing.md,
+    minWidth: 0,
+  },
+  ringWrap: {
+    width: RING_SIZE,
+    height: RING_SIZE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ringLabel: {
+    ...StyleSheet.absoluteFill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 4,
+  },
+  ringValue: {
+    fontSize: typography.sizes['2xl'],
+    fontWeight: typography.weights.bold,
+    color: colors.text,
+  },
+  ringCaption: {
+    fontSize: 11,
+    fontWeight: typography.weights.medium,
+    color: colors.text,
+    marginTop: 1,
+  },
+  seeBelowLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.sm,
+    gap: 2,
+  },
+  seeBelowText: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.bold,
+    color: colors.highlight,
+  },
+  seeBelowMuted: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+    marginTop: spacing.sm,
+  },
+  statusDivider: {
+    width: StyleSheet.hairlineWidth,
+    backgroundColor: colors.line,
+    alignSelf: 'stretch',
+  },
+  statusAssessment: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingLeft: spacing.md,
+    gap: spacing.sm,
+    minWidth: 0,
+  },
+  clipboardWrap: {
+    position: 'relative',
+    marginBottom: spacing.xs,
+  },
+  clipboardBadge: {
+    position: 'absolute',
+    right: -6,
+    bottom: -4,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: colors.highlight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: colors.surfaceElevated,
+  },
+  completedCopy: {
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.semibold,
+    color: colors.text,
+    textAlign: 'center',
+  },
+  retakeButton: {
+    alignSelf: 'stretch',
+    backgroundColor: colors.text,
+    borderRadius: borderRadius.lg,
+    minHeight: 44,
+    paddingVertical: spacing.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: spacing.xs,
+  },
+  retakeButtonText: {
+    color: colors.surfaceElevated,
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.bold,
+  },
+
+  heroCard: {
+    flexDirection: 'row',
+    backgroundColor: colors.highlightSoft,
+    borderRadius: borderRadius.xl,
+    overflow: 'hidden',
+  },
+  heroAccent: {
+    width: 5,
+    backgroundColor: colors.highlight,
+  },
+  heroBody: {
+    flex: 1,
+    padding: spacing.lg,
+  },
+  heroHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: spacing.xs,
+  },
+  heroLabel: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.semibold,
+    color: colors.highlight,
+  },
+  heroName: {
+    fontSize: typography.sizes.xl,
+    fontWeight: typography.weights.bold,
+    color: colors.text,
+    marginBottom: spacing.sm,
+  },
+  heroDescription: {
+    fontSize: typography.sizes.sm,
+    color: colors.textSecondary,
+    lineHeight: 20,
     marginBottom: spacing.md,
+  },
+  heroFacts: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+    gap: 6,
+  },
+  heroFact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  heroFactDot: {
+    fontSize: typography.sizes.sm,
+    color: colors.textSecondary,
+    marginHorizontal: 2,
+  },
+  heroFactText: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+    lineHeight: 16,
+  },
+  heroPeso: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.semibold,
+    color: colors.textSecondary,
+    lineHeight: 16,
+  },
+  navyButton: {
+    backgroundColor: colors.text,
+    borderRadius: borderRadius.lg,
+    minHeight: 48,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navyButtonText: {
+    color: colors.surfaceElevated,
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.bold,
+  },
+
+  chartCard: {
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: borderRadius.xl,
+    padding: spacing.lg,
+  },
+  chartHeader: {
+    marginBottom: spacing.lg,
   },
   cardTitle: {
     fontSize: typography.sizes.base,
@@ -488,214 +699,77 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginTop: 2,
   },
-  linkText: {
-    fontSize: typography.sizes.xs,
+  barItem: {
+    marginBottom: spacing.md,
+  },
+  barItemLast: {
+    marginBottom: 0,
+  },
+  barMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginBottom: 6,
+  },
+  barLabel: {
+    flex: 1,
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.semibold,
+    color: colors.text,
+  },
+  barValue: {
+    fontSize: typography.sizes.sm,
     fontWeight: typography.weights.bold,
+    color: colors.textSecondary,
+  },
+  barValueTop: {
     color: colors.highlight,
   },
-  summaryRow: {
-    flexDirection: 'row',
-  },
-  summaryItem: {
-    flex: 1,
-    alignItems: 'center',
-    borderRightWidth: 1,
-    borderRightColor: 'rgba(149, 189, 215, 0.25)',
-  },
-  summaryIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.highlightSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 5,
-  },
-  summaryValue: {
-    maxWidth: '90%',
-    fontSize: typography.sizes.sm,
-    fontWeight: typography.weights.bold,
-    color: colors.text,
-  },
-  summaryLabel: {
-    fontSize: 10,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  metricsRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    marginBottom: spacing.md,
-  },
-  metricColumn: {
-    flex: 1,
-  },
-  matchCard: {
-    minHeight: 236,
-    backgroundColor: colors.surfaceElevated,
-    borderRadius: borderRadius.xl,
-    padding: spacing.md,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.35)',
-  },
-  ringWrap: {
-    width: RING_SIZE,
-    height: RING_SIZE,
-    marginVertical: spacing.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  ringLabel: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  ringValue: {
-    fontSize: typography.sizes.xl,
-    fontWeight: typography.weights.bold,
-    color: colors.text,
-  },
-  ringCaption: {
-    fontSize: typography.sizes.xs,
-    color: colors.textSecondary,
-  },
-  matchName: {
-    fontSize: typography.sizes.xs,
-    fontWeight: typography.weights.semibold,
-    color: colors.text,
-    lineHeight: 16,
-    textAlign: 'center',
-  },
-  assessmentCard: {
-    minHeight: 236,
-    backgroundColor: colors.surfaceElevated,
-    borderRadius: borderRadius.xl,
-    padding: spacing.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.35)',
-  },
-  assessmentIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.highlightSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.sm,
-  },
-  assessmentValue: {
-    fontSize: typography.sizes['3xl'],
-    fontWeight: typography.weights.bold,
-    color: colors.text,
-  },
-  assessmentLabel: {
-    fontSize: typography.sizes.sm,
-    fontWeight: typography.weights.semibold,
-    color: colors.text,
-  },
-  assessmentHint: {
-    fontSize: typography.sizes.xs,
-    color: colors.textSecondary,
-    marginTop: 2,
-    marginBottom: spacing.md,
-  },
-  assessmentButton: {
-    backgroundColor: colors.highlight,
+  barTrack: {
+    height: 8,
     borderRadius: borderRadius.full,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.lg,
+    backgroundColor: colors.secondary,
+    overflow: 'hidden',
   },
-  assessmentButtonText: {
-    color: '#FFFFFF',
-    fontSize: typography.sizes.xs,
-    fontWeight: typography.weights.bold,
+  barFill: {
+    height: '100%',
+    borderRadius: borderRadius.full,
   },
-  programCard: {
-    backgroundColor: colors.surfaceElevated,
-    borderRadius: borderRadius.xl,
-    padding: spacing.lg,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.35)',
-  },
-  programHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    marginBottom: spacing.md,
-  },
-  programIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: borderRadius.lg,
-    backgroundColor: colors.highlightSoft,
+  chartEmpty: {
+    minHeight: 80,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  programHeading: {
-    flex: 1,
-  },
-  programName: {
-    fontSize: typography.sizes.lg,
-    fontWeight: typography.weights.bold,
-    color: colors.text,
-    marginTop: 2,
-  },
-  programDescription: {
+  chartEmptyText: {
     fontSize: typography.sizes.sm,
     color: colors.textSecondary,
     lineHeight: 20,
-    marginBottom: spacing.md,
+    textAlign: 'center',
+    marginTop: spacing.sm,
   },
-  programMeta: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  metaPill: {
-    maxWidth: '100%',
-    flexShrink: 1,
-    backgroundColor: colors.highlightSoft,
-    borderRadius: borderRadius.full,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 6,
-  },
-  metaText: {
-    flexShrink: 1,
-    fontSize: typography.sizes.xs,
-    color: colors.highlight,
-    fontWeight: typography.weights.semibold,
-    textTransform: 'capitalize',
-  },
-  primaryButton: {
-    backgroundColor: colors.highlight,
-    borderRadius: borderRadius.lg,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: typography.sizes.sm,
-    fontWeight: typography.weights.bold,
-  },
-  catalogButton: {
+
+  catalogToggle: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: spacing.md,
     backgroundColor: colors.surfaceElevated,
     borderRadius: borderRadius.xl,
     padding: spacing.lg,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.35)',
+  },
+  catalogToggleIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.secondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  catalogToggleText: {
+    flex: 1,
   },
   catalogTitle: {
-    fontSize: typography.sizes.base,
+    fontSize: typography.sizes.sm,
     fontWeight: typography.weights.bold,
     color: colors.text,
   },
@@ -704,40 +778,29 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginTop: 2,
   },
-  catalogIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.highlightSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   catalogList: {
-    marginBottom: spacing.md,
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: borderRadius.xl,
+    marginTop: spacing.sm,
+    overflow: 'hidden',
   },
   catalogItem: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: spacing.md,
-    backgroundColor: colors.surfaceElevated,
-    borderRadius: borderRadius.lg,
     padding: spacing.md,
-    marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.3)',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.line,
+  },
+  catalogItemLast: {
+    borderBottomWidth: 0,
   },
   catalogNumber: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.highlightSoft,
-  },
-  catalogNumberText: {
     fontSize: typography.sizes.xs,
     fontWeight: typography.weights.bold,
-    color: colors.highlight,
+    color: colors.accent,
+    marginTop: 2,
+    width: 20,
   },
   catalogItemContent: {
     flex: 1,
@@ -753,81 +816,11 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginTop: 3,
   },
-  catalogItemCost: {
+  catalogItemMeta: {
     fontSize: typography.sizes.xs,
     fontWeight: typography.weights.semibold,
-    color: colors.highlight,
+    color: colors.accent,
     marginTop: 3,
-  },
-  chartCard: {
-    backgroundColor: colors.surfaceElevated,
-    borderRadius: borderRadius.xl,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.35)',
-  },
-  chartHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-  },
-  chartBadge: {
-    backgroundColor: colors.highlightSoft,
-    borderRadius: borderRadius.full,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
-  },
-  chartBadgeText: {
-    fontSize: 10,
-    fontWeight: typography.weights.bold,
-    color: colors.highlight,
-  },
-  barItem: {
-    marginBottom: spacing.md,
-  },
-  barMeta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: spacing.md,
-    marginBottom: 6,
-  },
-  barLabel: {
-    flex: 1,
-    fontSize: typography.sizes.xs,
-    fontWeight: typography.weights.semibold,
-    color: colors.text,
-  },
-  barValue: {
-    fontSize: typography.sizes.xs,
-    fontWeight: typography.weights.bold,
-    color: colors.highlight,
-  },
-  barTrack: {
-    height: 10,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.highlightSoft,
-    overflow: 'hidden',
-  },
-  barFill: {
-    height: '100%',
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.highlight,
-  },
-  barFillSecondary: {
-    backgroundColor: colors.accent,
-  },
-  chartEmpty: {
-    minHeight: 80,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  chartEmptyText: {
-    fontSize: typography.sizes.sm,
-    color: colors.textSecondary,
-    lineHeight: 20,
-    textAlign: 'center',
   },
 });
 

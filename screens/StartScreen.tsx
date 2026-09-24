@@ -25,7 +25,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ navigation }) => {
       >
         <AnimatedFadeIn index={0}>
           <LinearGradient
-            colors={[colors.highlight, '#5B97B8']}
+            colors={[colors.highlight, colors.accent]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.hero}
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.line,
   },
   featureIcon: {
     width: 48,

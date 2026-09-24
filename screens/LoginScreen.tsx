@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.line,
   },
   logoImage: { width: '100%', height: '100%' },
   title: {

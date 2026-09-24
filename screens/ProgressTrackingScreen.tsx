@@ -123,7 +123,7 @@ const ProgressTrackingScreen: React.FC<ProgressScreenProps> = ({ route }) => {
               subtext="4-year program"
             />
             <MetricCard
-              icon={<Clock size={28} color={colors.secondary} />}
+              icon={<Clock size={28} color={colors.accent} />}
               label="Semester"
               value={`Semester ${progress.currentSemester}`}
               subtext={`${daysRemaining} days to graduation`}
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     marginBottom: spacing.xl,
     borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.4)',
+    borderColor: colors.line,
     borderLeftWidth: 4,
     borderLeftColor: colors.highlight,
   },
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     gap: spacing.md,
     borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.35)',
+    borderColor: colors.line,
   },
   metricContent: { flex: 1 },
   metricLabel: { fontSize: typography.sizes.xs, color: colors.textSecondary },
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     gap: spacing.sm,
     borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.35)',
+    borderColor: colors.line,
   },
   graduationTitle: {
     fontSize: typography.sizes.lg,
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.35)',
+    borderColor: colors.line,
   },
   subjectCategoryHeader: {
     flexDirection: 'row',
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     paddingBottom: spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(149, 189, 215, 0.35)',
+    borderBottomColor: colors.line,
   },
   subjectCategoryTitle: {
     flex: 1,
