@@ -142,7 +142,10 @@ const RecommendationsScreen: React.FC<RecommendationsScreenProps> = ({
             {isAiLoading ? (
               <LoadingSpinner message="Analyzing your profile..." />
             ) : (
-              <Text style={styles.aiText}>{aiAnalysis}</Text>
+              <Text style={styles.aiText}>
+                {aiAnalysis ||
+                  'Complete your profile and assessment for personalized guidance.'}
+              </Text>
             )}
           </View>
         </AnimatedFadeIn>
@@ -274,7 +277,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.xl,
     marginBottom: spacing.xl,
     borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.45)',
+    borderColor: colors.line,
   },
   aiHeaderRow: {
     flexDirection: 'row',
@@ -318,7 +321,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     marginBottom: spacing.md,
     borderWidth: 1.5,
-    borderColor: 'rgba(149, 189, 215, 0.4)',
+    borderColor: colors.line,
   },
   courseCardTop: {
     borderColor: colors.highlight,
@@ -364,7 +367,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.md,
     borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.45)',
+    borderColor: colors.line,
   },
   statPillText: {
     fontSize: typography.sizes.xs,
@@ -378,16 +381,15 @@ const styles = StyleSheet.create({
   primaryBtn: {
     backgroundColor: colors.highlight,
     borderRadius: borderRadius.lg,
-    paddingVertical: spacing.lg,
+    minHeight: 52,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
     alignItems: 'center',
-    shadowColor: colors.highlight,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.28,
-    shadowRadius: 8,
-    elevation: 4,
+    justifyContent: 'center',
+    alignSelf: 'stretch',
   },
   primaryBtnText: {
-    color: '#FFFFFF',
+    color: colors.surfaceElevated,
     fontWeight: typography.weights.bold,
     fontSize: typography.sizes.base,
   },

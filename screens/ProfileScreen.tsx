@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
 import { useUserStore } from '../stores/userStore';
@@ -29,11 +30,16 @@ import {
   Lightbulb,
   Trash2,
   Pencil,
+  Camera,
 } from 'lucide-react-native';
 import { QuizResult } from '../utils/types';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
 import { PressableScale } from '../components/PressableScale';
+import {
+  pickProfilePhotoBase64,
+  profilePhotoUri,
+} from '../utils/profilePhoto';
 
 const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const userProfile = useUserStore((state) => state.userProfile);
@@ -50,6 +56,9 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [clearingAll, setClearingAll] = useState(false);
+  const [updatingPhoto, setUpdatingPhoto] = useState(false);
+
+  const photoUri = profilePhotoUri(userProfile?.photoBase64);
 
   const sortedHistory = useMemo(
     () =>
@@ -211,6 +220,26 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
     );
   };
 
+  const handleChangePhoto = async () => {
+    if (!account?.uid || !userProfile) {
+      Alert.alert('Profile needed', 'Finish setting up your profile first.');
+      return;
+    }
+    setUpdatingPhoto(true);
+    try {
+      const dataUri = await pickProfilePhotoBase64();
+      if (!dataUri) return;
+      const updated = { ...userProfile, photoBase64: dataUri };
+      setUserProfile(updated);
+      await saveUserProfile(account.uid, updated);
+    } catch (error) {
+      console.error('[ProfileScreen] update photo:', error);
+      Alert.alert('Could not save photo', 'Try another image or try again.');
+    } finally {
+      setUpdatingPhoto(false);
+    }
+  };
+
   const handleRetake = () => {
     clearQuizAnswers();
     navigation.navigate('AssessmentQuiz');
@@ -238,11 +267,30 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
       >
         <AnimatedFadeIn index={0} style={styles.header}>
-          <View style={styles.avatarPlaceholder}>
-            <Text style={styles.avatarText}>
-              {(userProfile?.name || 'U').charAt(0).toUpperCase()}
-            </Text>
-          </View>
+          <TouchableOpacity
+            style={styles.avatarWrap}
+            onPress={handleChangePhoto}
+            disabled={updatingPhoto}
+            accessibilityLabel="Change profile picture"
+            activeOpacity={0.85}
+          >
+            {updatingPhoto ? (
+              <View style={styles.avatarPlaceholder}>
+                <ActivityIndicator color={colors.surfaceElevated} />
+              </View>
+            ) : photoUri ? (
+              <Image source={{ uri: photoUri }} style={styles.avatarImage} />
+            ) : (
+              <View style={styles.avatarPlaceholder}>
+                <Text style={styles.avatarText}>
+                  {(userProfile?.name || 'U').charAt(0).toUpperCase()}
+                </Text>
+              </View>
+            )}
+            <View style={styles.avatarBadge}>
+              <Camera size={12} color={colors.surfaceElevated} />
+            </View>
+          </TouchableOpacity>
           <View style={styles.greetingContent}>
             <Text style={styles.greeting}>Welcome back!</Text>
             <Text style={styles.userName}>
@@ -439,6 +487,9 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
     marginBottom: spacing['2xl'],
   },
+  avatarWrap: {
+    position: 'relative',
+  },
   avatarPlaceholder: {
     width: 64,
     height: 64,
@@ -447,8 +498,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  avatarImage: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.highlightSoft,
+  },
+  avatarBadge: {
+    position: 'absolute',
+    right: -2,
+    bottom: -2,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.highlight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: colors.surfaceElevated,
+  },
   avatarText: {
-    color: '#FFFFFF',
+    color: colors.surfaceElevated,
     fontSize: typography.sizes['2xl'],
     fontWeight: typography.weights.bold,
   },
@@ -472,7 +542,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     marginBottom: spacing.lg,
     borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.4)',
+    borderColor: colors.line,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -541,8 +611,8 @@ const styles = StyleSheet.create({
     fontWeight: typography.weights.medium,
   },
   divider: {
-    height: 1,
-    backgroundColor: colors.border,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.line,
     marginVertical: spacing.lg,
   },
   selectedPathTitle: {
@@ -594,7 +664,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   checkmarkText: {
-    color: colors.text,
+    color: colors.surfaceElevated,
     fontWeight: typography.weights.bold,
   },
   strengthText: {
@@ -649,8 +719,8 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
   },
   historyItemBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.line,
   },
   historyDate: {
     backgroundColor: colors.surface,
@@ -681,14 +751,18 @@ const styles = StyleSheet.create({
   },
   retakeButton: {
     backgroundColor: colors.highlight,
-    paddingVertical: spacing.lg,
+    minHeight: 52,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
     borderRadius: borderRadius.lg,
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: spacing.lg,
     marginBottom: spacing.xl,
+    alignSelf: 'stretch',
   },
   retakeButtonText: {
-    color: '#FFFFFF',
+    color: colors.surfaceElevated,
     fontWeight: typography.weights.bold,
     fontSize: typography.sizes.base,
   },

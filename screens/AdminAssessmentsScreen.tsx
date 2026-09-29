@@ -7,6 +7,8 @@ import {
   ScrollView,
   Alert,
   TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
 import { AdminAssessmentsScreenProps } from '../navigation/types';
@@ -85,73 +87,101 @@ const AdminAssessmentsScreen: React.FC<AdminAssessmentsScreenProps> = () => {
     ]);
   };
 
+  const isNew =
+    !!editing && !questions.some((question) => question.id === editing.id);
+
   return (
     <ScreenWrapper gradient>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.eyebrow}>Assessment bank</Text>
-        <Text style={styles.pageTitle}>Manage questions</Text>
-        <Text style={styles.pageHint}>Keep career-assessment prompts clear and relevant.</Text>
-        <PrimaryButton
-          label="Add Question"
-          onPress={startNew}
-          icon={<Plus size={20} color="#FFFFFF" />}
-          style={styles.addBtn}
-        />
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text style={styles.eyebrow}>Assessment bank</Text>
+          <Text style={styles.pageTitle}>Manage questions</Text>
+          <Text style={styles.pageHint}>
+            Keep career-assessment prompts clear and relevant.
+          </Text>
 
-        {questions.map((q, index) => (
-          <View key={q.id} style={[styles.card, shadows.sm]}>
-            <Text style={styles.qNum}>Q{index + 1}</Text>
-            <Text style={styles.qText}>{q.text}</Text>
-            <Text style={styles.opts}>{q.options?.length || 0} options</Text>
-            <View style={styles.row}>
-              <TouchableOpacity onPress={() => openEdit(q)}>
-                <Text style={styles.editLink}>Edit</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => handleDelete(q.id)}>
-                <Trash2 size={18} color={colors.error} />
-              </TouchableOpacity>
+          {editing ? (
+            <View style={[styles.form, shadows.md]}>
+              <Text style={styles.formTitle}>
+                {isNew ? 'New question' : 'Edit question'}
+              </Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                placeholder="Question text"
+                placeholderTextColor={colors.textSecondary}
+                value={editing.text}
+                onChangeText={(t) => setEditing({ ...editing, text: t })}
+                multiline
+              />
+              <Text style={styles.hint}>Options (one per line)</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                placeholderTextColor={colors.textSecondary}
+                value={optionsText}
+                onChangeText={setOptionsText}
+                multiline
+              />
+              <View style={styles.formActions}>
+                <PrimaryButton
+                  label="Cancel"
+                  onPress={() => setEditing(null)}
+                  variant="outline"
+                  style={styles.formButton}
+                />
+                <PrimaryButton
+                  label="Save"
+                  onPress={handleSave}
+                  style={styles.formButton}
+                />
+              </View>
             </View>
-          </View>
-        ))}
+          ) : (
+            <PrimaryButton
+              label="Add question"
+              onPress={startNew}
+              icon={<Plus size={20} color={colors.surfaceElevated} />}
+              style={styles.addBtn}
+            />
+          )}
 
-        {editing && (
-          <View style={[styles.form, shadows.md]}>
-            <Text style={styles.formTitle}>Edit Question</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="Question text"
-              value={editing.text}
-              onChangeText={(t) => setEditing({ ...editing, text: t })}
-              multiline
-            />
-            <Text style={styles.hint}>Options (one per line)</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              value={optionsText}
-              onChangeText={setOptionsText}
-              multiline
-            />
-            <View style={styles.formActions}>
-              <PrimaryButton
-                label="Cancel"
-                onPress={() => setEditing(null)}
-                variant="outline"
-                style={styles.formButton}
-              />
-              <PrimaryButton
-                label="Save"
-                onPress={handleSave}
-                style={styles.formButton}
-              />
+          {questions.length === 0 && !editing ? (
+            <View style={styles.emptyCard}>
+              <Text style={styles.emptyTitle}>No questions yet</Text>
+              <Text style={styles.emptyBody}>
+                Tap Add question to build the assessment bank.
+              </Text>
             </View>
-          </View>
-        )}
-      </ScrollView>
+          ) : (
+            questions.map((q, index) => (
+              <View key={q.id} style={[styles.card, shadows.sm]}>
+                <Text style={styles.qNum}>Q{index + 1}</Text>
+                <Text style={styles.qText}>{q.text}</Text>
+                <Text style={styles.opts}>{q.options?.length || 0} options</Text>
+                <View style={styles.row}>
+                  <TouchableOpacity onPress={() => openEdit(q)}>
+                    <Text style={styles.editLink}>Edit</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => handleDelete(q.id)}>
+                    <Trash2 size={18} color={colors.error} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
     </ScreenWrapper>
   );
 };
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
   content: { padding: spacing.lg, paddingBottom: spacing['3xl'] },
   eyebrow: {
     color: colors.highlight,
@@ -175,42 +205,90 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
     marginBottom: spacing.lg,
   },
+  emptyCard: {
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: borderRadius.xl,
+    padding: spacing.xl,
+    borderWidth: 1,
+    borderColor: colors.line,
+    alignItems: 'center',
+  },
+  emptyTitle: {
+    color: colors.text,
+    fontWeight: typography.weights.bold,
+    fontSize: typography.sizes.base,
+  },
+  emptyBody: {
+    color: colors.textSecondary,
+    fontSize: typography.sizes.sm,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+    lineHeight: 20,
+  },
   card: {
     backgroundColor: colors.surfaceElevated,
     borderRadius: borderRadius.xl,
     padding: spacing.lg,
     marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.line,
   },
-  qNum: { fontSize: typography.sizes.xs, color: colors.highlight, fontWeight: typography.weights.bold },
-  qText: { fontWeight: typography.weights.semibold, marginTop: spacing.xs },
-  opts: { fontSize: typography.sizes.xs, color: colors.textSecondary, marginTop: spacing.xs },
-  row: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.md },
-  editLink: { color: colors.highlight, fontWeight: typography.weights.semibold },
+  qNum: {
+    fontSize: typography.sizes.xs,
+    color: colors.highlight,
+    fontWeight: typography.weights.bold,
+  },
+  qText: {
+    fontWeight: typography.weights.semibold,
+    marginTop: spacing.xs,
+    color: colors.text,
+  },
+  opts: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: spacing.md,
+  },
+  editLink: {
+    color: colors.highlight,
+    fontWeight: typography.weights.semibold,
+  },
   form: {
     marginTop: spacing.lg,
+    marginBottom: spacing.lg,
     padding: spacing.lg,
     borderRadius: borderRadius.xl,
     borderWidth: 1,
     borderColor: colors.highlight,
     backgroundColor: colors.surfaceElevated,
   },
-  formTitle: { fontWeight: typography.weights.bold, marginBottom: spacing.md },
-  hint: { fontSize: typography.sizes.xs, color: colors.textSecondary, marginBottom: spacing.xs },
+  formTitle: {
+    fontWeight: typography.weights.bold,
+    marginBottom: spacing.md,
+    color: colors.text,
+    fontSize: typography.sizes.base,
+  },
+  hint: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+    marginBottom: spacing.xs,
+  },
   input: {
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.lineStrong,
     borderRadius: borderRadius.md,
     padding: spacing.md,
     marginBottom: spacing.sm,
     backgroundColor: colors.surfaceElevated,
+    color: colors.text,
   },
-  textArea: { minHeight: 80 },
+  textArea: { minHeight: 80, textAlignVertical: 'top' },
   formActions: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.md },
-  formButton: {
-    flex: 1,
-  },
+  formButton: { flex: 1 },
 });
 
 export default AdminAssessmentsScreen;

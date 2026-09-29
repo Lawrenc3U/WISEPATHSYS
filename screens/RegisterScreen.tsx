@@ -19,6 +19,12 @@ import { registerWithEmail, getFirebaseAuthErrorMessage } from '../services/auth
 import { useAuthStore } from '../stores/authStore';
 import { RegisterScreenProps } from '../navigation/types';
 import { ErrorBanner } from '../components/ErrorBanner';
+<<<<<<< HEAD
+=======
+
+const wisepathLogo = require('../assets/wisepath.jpg');
+
+>>>>>>> 537bc15881502aac86260b70c280e128289c963e
 
 const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -155,8 +161,13 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   content: { padding: spacing.xl, paddingBottom: spacing['3xl'] },
   iconBadge: {
+<<<<<<< HEAD
     width: 150,
     height: 150,
+=======
+    width: 90,
+    height: 90,
+>>>>>>> 537bc15881502aac86260b70c280e128289c963e
     borderRadius: 16,
     backgroundColor: colors.surfaceElevated,
     alignItems: 'center',
@@ -165,6 +176,10 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
+<<<<<<< HEAD
+=======
+    overflow: 'hidden',
+>>>>>>> 537bc15881502aac86260b70c280e128289c963e
   },
   logoImage: { width: '100%', height: '100%' },
   eyebrow: {
@@ -194,7 +209,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     marginBottom: spacing.lg,
     borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.35)',
+    borderColor: colors.line,
   },
   roleToggle: {
     flexDirection: 'row',

@@ -137,7 +137,7 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
       case 'enrollment':
         return <TrendingUp size={18} color={colors.success} />;
       default:
-        return <Users size={18} color={colors.secondary} />;
+        return <Users size={18} color={colors.accent} />;
     }
   };
 
@@ -194,30 +194,34 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
         ) : (
           <>
             <View style={styles.statsGrid}>
-              <StatCard
-                label="Total Students"
-                value={stats?.totalStudents ?? 0}
-                icon={<Users size={22} color={colors.highlight} />}
-                accent={colors.highlight}
-              />
-              <StatCard
-                label="Active Assessments"
-                value={stats?.activeAssessments ?? 0}
-                icon={<ClipboardCheck size={22} color={colors.secondary} />}
-                accent={colors.secondary}
-              />
-              <StatCard
-                label="Completion Rate"
-                value={`${stats?.completionRate ?? 0}%`}
-                icon={<TrendingUp size={22} color={colors.success} />}
-                accent={colors.success}
-              />
-              <StatCard
-                label="Total Courses"
-                value={stats?.totalCourses ?? 0}
-                icon={<BookOpen size={22} color={colors.accent} />}
-                accent={colors.accent}
-              />
+              <View style={styles.statsRow}>
+                <StatCard
+                  label="Total Students"
+                  value={stats?.totalStudents ?? 0}
+                  icon={<Users size={22} color={colors.highlight} />}
+                  accent={colors.highlight}
+                />
+                <StatCard
+                  label="Active Assessments"
+                  value={stats?.activeAssessments ?? 0}
+                  icon={<ClipboardCheck size={22} color={colors.accent} />}
+                  accent={colors.accent}
+                />
+              </View>
+              <View style={styles.statsRow}>
+                <StatCard
+                  label="Completion Rate"
+                  value={`${stats?.completionRate ?? 0}%`}
+                  icon={<TrendingUp size={22} color={colors.success} />}
+                  accent={colors.success}
+                />
+                <StatCard
+                  label="Total Courses"
+                  value={stats?.totalCourses ?? 0}
+                  icon={<BookOpen size={22} color={colors.accent} />}
+                  accent={colors.accent}
+                />
+              </View>
             </View>
 
             <Text style={styles.completionHint}>
@@ -345,19 +349,20 @@ const styles = StyleSheet.create({
   },
   loader: { marginVertical: spacing['2xl'] },
   statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: spacing.md,
     marginBottom: spacing.sm,
   },
+  statsRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
   statCard: {
-    width: '47%',
-    flexGrow: 1,
+    flex: 1,
     backgroundColor: colors.surfaceElevated,
     borderRadius: borderRadius.xl,
     padding: spacing.lg,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.line,
   },
   statIconWrap: {
     width: 40,
@@ -389,7 +394,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.xl,
     padding: spacing.lg,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.line,
     marginBottom: spacing.xl,
   },
   sectionHeader: {
@@ -416,7 +421,7 @@ const styles = StyleSheet.create({
   },
   activityRowBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.line,
   },
   activityIcon: {
     marginTop: 2,
@@ -452,21 +457,23 @@ const styles = StyleSheet.create({
   },
   quickLink: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xs,
     paddingVertical: spacing.md,
+    paddingHorizontal: spacing.sm,
     borderRadius: borderRadius.lg,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.line,
     backgroundColor: colors.surfaceElevated,
     ...shadows.sm,
   },
   quickLinkText: {
-    fontSize: typography.sizes.sm,
+    fontSize: typography.sizes.xs,
     fontWeight: typography.weights.semibold,
     color: colors.highlight,
+    textAlign: 'center',
   },
   seedBtn: {
     backgroundColor: colors.highlight,
@@ -477,7 +484,7 @@ const styles = StyleSheet.create({
   },
   seedBtnDisabled: { opacity: 0.6 },
   seedBtnText: {
-    color: '#FFFFFF',
+    color: colors.surfaceElevated,
     fontWeight: typography.weights.bold,
     fontSize: typography.sizes.sm,
   },

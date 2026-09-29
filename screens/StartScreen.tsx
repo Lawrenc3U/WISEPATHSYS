@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
@@ -12,7 +13,8 @@ import { Zap, BookOpen, Users } from 'lucide-react-native';
 import { ScreenWrapper } from '../components/ScreenWrapper';
 import { AnimatedFadeIn } from '../components/AnimatedFadeIn';
 import { PrimaryButton } from '../components/PrimaryButton';
-import { CampusBadge } from '../components/sprites';
+
+const wisepathLogo = require('../assets/wisepath.jpg');
 
 const StartScreen: React.FC<StartScreenProps> = ({ navigation }) => {
   return (
@@ -23,13 +25,13 @@ const StartScreen: React.FC<StartScreenProps> = ({ navigation }) => {
       >
         <AnimatedFadeIn index={0}>
           <LinearGradient
-            colors={[colors.highlight, '#5B97B8']}
+            colors={[colors.highlight, colors.accent]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.hero}
           >
             <View style={styles.logoRing}>
-              <CampusBadge size={88} />
+              <Image source={wisepathLogo} style={styles.logoImage} resizeMode="contain" />
             </View>
             <Text style={styles.heroTitle}>WisePath</Text>
             <Text style={styles.heroSubtitle}>
@@ -117,6 +119,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: spacing.lg,
   },
+  logoImage: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+  },
   heroTitle: {
     fontSize: typography.sizes['3xl'],
     fontWeight: typography.weights.bold,
@@ -136,7 +143,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.line,
   },
   featureIcon: {
     width: 48,

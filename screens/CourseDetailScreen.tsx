@@ -1,5 +1,11 @@
 import React, { useMemo } from 'react';
-import { View, ScrollView, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  View,
+  ScrollView,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, borderRadius, typography, shadows } from '../utils/theme';
 import { useCourseStore } from '../stores/courseStore';
@@ -43,12 +49,13 @@ const CourseDetailScreen = ({
   return (
     <ScreenWrapper gradient>
       <ScrollView
+        style={styles.scroll}
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
         <AnimatedFadeIn index={0}>
           <LinearGradient
-            colors={[colors.highlight, '#5B97B8']}
+            colors={[colors.highlight, colors.accent]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.heroCard}
@@ -57,12 +64,14 @@ const CourseDetailScreen = ({
             <Text style={styles.heroDesc}>{course.description}</Text>
             <View style={styles.heroStats}>
               <View style={styles.heroStat}>
-                <Clock size={18} color="#FFF" />
+                <Clock size={18} color={colors.surfaceElevated} />
                 <Text style={styles.heroStatText}>{course.duration}</Text>
               </View>
               <View style={styles.heroStat}>
-                <Award size={18} color="#FFF" />
-                <Text style={styles.heroStatText}>{course.skills.length} skills</Text>
+                <Award size={18} color={colors.surfaceElevated} />
+                <Text style={styles.heroStatText}>
+                  {course.skills.length} skills
+                </Text>
               </View>
               {course.estimatedTuitionPerTerm ? (
                 <Text style={styles.heroStatText}>
@@ -77,7 +86,13 @@ const CourseDetailScreen = ({
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Skills you'll learn</Text>
             {course.skills.map((skill, index) => (
-              <View key={skill} style={styles.skillRow}>
+              <View
+                key={skill}
+                style={[
+                  styles.skillRow,
+                  index === course.skills.length - 1 && styles.skillRowLast,
+                ]}
+              >
                 <CheckCircle size={18} color={colors.highlight} />
                 <Text style={styles.skillText}>{skill}</Text>
               </View>
@@ -87,19 +102,33 @@ const CourseDetailScreen = ({
 
         <AnimatedFadeIn index={2}>
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Curriculum Checklist</Text>
+            <Text style={styles.sectionTitle}>Curriculum checklist</Text>
             {course.curriculum.map((item, index) => {
-              const isCompleted = userProfile?.progress?.courseId === courseId && userProfile?.progress?.completedSubjects?.includes(item);
+              const isCompleted =
+                userProfile?.progress?.courseId === courseId &&
+                userProfile?.progress?.completedSubjects?.includes(item);
               return (
                 <View key={item} style={styles.curriculumRow}>
-                  <View style={[styles.curriculumIcon, isCompleted && { backgroundColor: colors.success }]}>
+                  <View
+                    style={[
+                      styles.curriculumIcon,
+                      isCompleted && { backgroundColor: colors.success },
+                    ]}
+                  >
                     {isCompleted ? (
-                      <CheckCircle size={16} color="#FFF" />
+                      <CheckCircle size={16} color={colors.surfaceElevated} />
                     ) : (
                       <Text style={styles.curriculumNumText}>{index + 1}</Text>
                     )}
                   </View>
-                  <Text style={[styles.curriculumText, isCompleted && { textDecorationLine: 'line-through', color: colors.textSecondary }]}>{item}</Text>
+                  <Text
+                    style={[
+                      styles.curriculumText,
+                      isCompleted && styles.curriculumDone,
+                    ]}
+                  >
+                    {item}
+                  </Text>
                 </View>
               );
             })}
@@ -110,7 +139,9 @@ const CourseDetailScreen = ({
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <TrendingUp size={20} color={colors.highlight} />
-              <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>Career paths</Text>
+              <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>
+                Career paths
+              </Text>
             </View>
             {course.careerPaths.map((path) => (
               <View key={path} style={styles.careerChip}>
@@ -119,21 +150,21 @@ const CourseDetailScreen = ({
             ))}
           </View>
         </AnimatedFadeIn>
-
       </ScrollView>
 
-      <AnimatedFadeIn index={4} style={styles.footer}>
+      <View style={styles.footer}>
         <PrimaryButton
-          label="Back to Recommendations"
+          label="Back to recommendations"
           onPress={() => navigation.navigate('Recommendations')}
           variant="outline"
         />
-      </AnimatedFadeIn>
+      </View>
     </ScreenWrapper>
   );
 };
 
 const styles = StyleSheet.create({
+  scroll: { flex: 1 },
   contentContainer: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing['3xl'],
@@ -148,7 +179,7 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: typography.sizes['2xl'],
     fontWeight: typography.weights.bold,
-    color: '#FFFFFF',
+    color: colors.surfaceElevated,
     marginBottom: spacing.sm,
   },
   heroDesc: {
@@ -159,15 +190,17 @@ const styles = StyleSheet.create({
   },
   heroStats: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xl },
   heroStat: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  heroStatText: { color: '#FFF', fontWeight: typography.weights.semibold },
+  heroStatText: {
+    color: colors.surfaceElevated,
+    fontWeight: typography.weights.semibold,
+  },
   section: {
-    ...shadows.sm,
     backgroundColor: colors.surfaceElevated,
     borderRadius: borderRadius.xl,
     padding: spacing.lg,
     marginBottom: spacing.lg,
     borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.4)',
+    borderColor: colors.line,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -186,9 +219,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
     paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(149, 189, 215, 0.35)',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.line,
   },
+  skillRowLast: { borderBottomWidth: 0 },
   skillText: {
     flex: 1,
     fontSize: typography.sizes.base,
@@ -207,12 +241,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  curriculumNumText: { color: '#FFF', fontWeight: typography.weights.bold, fontSize: 12 },
+  curriculumNumText: {
+    color: colors.surfaceElevated,
+    fontWeight: typography.weights.bold,
+    fontSize: 12,
+  },
   curriculumText: {
     flex: 1,
     fontSize: typography.sizes.sm,
     color: colors.text,
     lineHeight: 22,
+  },
+  curriculumDone: {
+    textDecorationLine: 'line-through',
+    color: colors.textSecondary,
   },
   careerChip: {
     backgroundColor: colors.highlightSoft,
@@ -223,39 +265,13 @@ const styles = StyleSheet.create({
     borderLeftColor: colors.highlight,
   },
   careerText: { fontSize: typography.sizes.sm, color: colors.text },
-  assessmentHint: {
-    fontSize: typography.sizes.sm,
-    color: colors.textSecondary,
-    marginBottom: spacing.md,
-    lineHeight: 20,
-  },
-  assessmentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
-    marginBottom: spacing.sm,
-  },
-  assessmentRowContent: { flex: 1, marginRight: spacing.md },
-  assessmentTitle: {
-    fontSize: typography.sizes.base,
-    fontWeight: typography.weights.bold,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  assessmentStatus: {
-    fontSize: typography.sizes.xs,
-    color: 'rgba(255,255,255,0.9)',
-  },
   footer: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.lg,
     paddingTop: spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(149, 189, 215, 0.35)',
-    backgroundColor: 'rgba(255,255,255,0.7)',
-    gap: spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.line,
+    backgroundColor: colors.surfaceElevated,
   },
   outlineBtn: {
     alignItems: 'center',
@@ -277,8 +293,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.xl,
+    gap: spacing.lg,
   },
-  errorText: { fontSize: typography.sizes.base, color: colors.textSecondary },
+  errorText: {
+    fontSize: typography.sizes.lg,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
 });
 
 export default CourseDetailScreen;

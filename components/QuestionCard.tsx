@@ -49,7 +49,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
               ]}
             >
               {isSelected ? (
-                <Check size={14} color="#FFFFFF" strokeWidth={3} />
+                <Check size={14} color={colors.surfaceElevated} strokeWidth={3} />
               ) : (
                 <Text style={styles.optionLetterText}>{letter}</Text>
               )}
@@ -190,12 +190,13 @@ const styles = StyleSheet.create({
   optionButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    minHeight: 52,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
     borderRadius: borderRadius.lg,
     borderWidth: 1.5,
-    borderColor: 'rgba(149, 189, 215, 0.55)',
-    backgroundColor: colors.highlightSoft,
+    borderColor: colors.lineStrong,
+    backgroundColor: colors.surfaceElevated,
   },
   optionButtonSelected: {
     borderColor: colors.highlight,
@@ -213,7 +214,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   optionLetterSelected: {
-    borderColor: '#FFFFFF',
+    borderColor: colors.surfaceElevated,
     backgroundColor: 'rgba(255,255,255,0.22)',
   },
   optionLetterText: {
@@ -229,7 +230,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   optionTextSelected: {
-    color: '#FFFFFF',
+    color: colors.surfaceElevated,
     fontWeight: typography.weights.bold,
   },
   scaleContainer: {
@@ -243,7 +244,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: borderRadius.lg,
     borderWidth: 1.5,
-    borderColor: 'rgba(149, 189, 215, 0.55)',
+    borderColor: colors.lineStrong,
     backgroundColor: colors.highlightSoft,
   },
   scaleButtonSelected: {
@@ -256,6 +257,6 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   scaleTextSelected: {
-    color: '#FFFFFF',
+    color: colors.surfaceElevated,
   },
 });

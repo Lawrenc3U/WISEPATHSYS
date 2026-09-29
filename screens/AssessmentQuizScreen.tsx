@@ -236,6 +236,7 @@ const AssessmentQuizScreen: React.FC<AssessmentQuizScreenProps> = ({
         </ScrollView>
 
         <View style={styles.footer}>
+<<<<<<< HEAD
           {submitError && (
             <ErrorBanner
               message={submitError}
@@ -243,6 +244,50 @@ const AssessmentQuizScreen: React.FC<AssessmentQuizScreenProps> = ({
               onDismiss={() => setSubmitError(null)}
               onRetry={handleSubmitQuiz}
             />
+=======
+          <PressableScale
+            style={[
+              styles.secondaryButton,
+              currentQuestionIndex === 0 && styles.disabledButton,
+            ]}
+            onPress={handlePreviousQuestion}
+            disabled={currentQuestionIndex === 0}
+            pressedScale={0.97}
+          >
+            <ChevronLeft size={20} color={colors.highlight} />
+            <Text style={styles.secondaryButtonText}>Back</Text>
+          </PressableScale>
+
+          {isLast ? (
+            <PressableScale
+              style={[
+                styles.primaryButton,
+                (!isQuizComplete || submitting) && styles.disabledButton,
+              ]}
+              onPress={handleSubmitQuiz}
+              disabled={!isQuizComplete || submitting}
+              pressedScale={0.97}
+            >
+              {submitting ? (
+                <ActivityIndicator color={colors.surfaceElevated} />
+              ) : (
+                <Text style={styles.primaryButtonText}>See Top 3 Matches</Text>
+              )}
+            </PressableScale>
+          ) : (
+            <PressableScale
+              style={[
+                styles.primaryButton,
+                !canProceed && styles.disabledButton,
+              ]}
+              onPress={handleNextQuestion}
+              disabled={!canProceed}
+              pressedScale={0.97}
+            >
+              <Text style={styles.primaryButtonText}>Next</Text>
+              <ChevronRight size={20} color={colors.surfaceElevated} />
+            </PressableScale>
+>>>>>>> 537bc15881502aac86260b70c280e128289c963e
           )}
           <View style={styles.footerButtons}>
             <PressableScale
@@ -324,7 +369,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.45)',
+    borderColor: colors.line,
   },
   headerText: { flex: 1 },
   eyebrow: {
@@ -382,7 +427,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: 'rgba(149, 189, 215, 0.45)',
+    backgroundColor: colors.lineStrong,
   },
   dotAnswered: {
     backgroundColor: colors.accent,
@@ -400,16 +445,22 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceElevated,
     borderRadius: borderRadius.xl,
     borderWidth: 1,
-    borderColor: 'rgba(149, 189, 215, 0.35)',
+    borderColor: colors.line,
     overflow: 'hidden',
   },
   footer: {
+<<<<<<< HEAD
+=======
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    gap: spacing.md,
+>>>>>>> 537bc15881502aac86260b70c280e128289c963e
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     paddingBottom: spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(149, 189, 215, 0.35)',
-    backgroundColor: 'rgba(255,255,255,0.65)',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.line,
+    backgroundColor: colors.surfaceElevated,
   },
   footerButtons: {
     flexDirection: 'row',
@@ -421,17 +472,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.highlight,
-    paddingVertical: spacing.lg,
+    minHeight: 52,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
     borderRadius: borderRadius.lg,
     gap: spacing.sm,
-    shadowColor: colors.highlight,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.28,
-    shadowRadius: 8,
-    elevation: 4,
   },
   primaryButtonText: {
-    color: '#FFFFFF',
+    color: colors.surfaceElevated,
     fontWeight: typography.weights.bold,
     fontSize: typography.sizes.base,
   },
@@ -441,7 +489,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.surfaceElevated,
-    paddingVertical: spacing.lg,
+    minHeight: 52,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
     borderRadius: borderRadius.lg,
     gap: spacing.xs,
     borderWidth: 1.5,

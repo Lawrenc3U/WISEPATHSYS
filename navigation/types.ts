@@ -1,4 +1,4 @@
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { StackScreenProps } from '@react-navigation/stack';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -17,41 +17,41 @@ export type RootStackParamList = {
   AdminData: undefined;
 };
 
-export type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
-export type RegisterScreenProps = NativeStackScreenProps<RootStackParamList, 'Register'>;
-export type ProfileSetupScreenProps = NativeStackScreenProps<
+export type LoginScreenProps = StackScreenProps<RootStackParamList, 'Login'>;
+export type RegisterScreenProps = StackScreenProps<RootStackParamList, 'Register'>;
+export type ProfileSetupScreenProps = StackScreenProps<
   RootStackParamList,
   'ProfileSetup'
 >;
-export type StartScreenProps = NativeStackScreenProps<RootStackParamList, 'Start'>;
-export type DashboardScreenProps = NativeStackScreenProps<
+export type StartScreenProps = StackScreenProps<RootStackParamList, 'Start'>;
+export type DashboardScreenProps = StackScreenProps<
   RootStackParamList,
   'Dashboard'
 >;
-export type AssessmentQuizScreenProps = NativeStackScreenProps<
+export type AssessmentQuizScreenProps = StackScreenProps<
   RootStackParamList,
   'AssessmentQuiz'
 >;
-export type RecommendationsScreenProps = NativeStackScreenProps<
+export type RecommendationsScreenProps = StackScreenProps<
   RootStackParamList,
   'Recommendations'
 >;
-export type CourseDetailScreenProps = NativeStackScreenProps<
+export type CourseDetailScreenProps = StackScreenProps<
   RootStackParamList,
   'CourseDetail'
 >;
-export type ProgressScreenProps = NativeStackScreenProps<RootStackParamList, 'Progress'>;
-export type ProfileScreenProps = NativeStackScreenProps<RootStackParamList, 'Profile'>;
-export type AdminDashboardScreenProps = NativeStackScreenProps<
+export type ProgressScreenProps = StackScreenProps<RootStackParamList, 'Progress'>;
+export type ProfileScreenProps = StackScreenProps<RootStackParamList, 'Profile'>;
+export type AdminDashboardScreenProps = StackScreenProps<
   RootStackParamList,
   'AdminDashboard'
 >;
-export type AdminCoursesScreenProps = NativeStackScreenProps<
+export type AdminCoursesScreenProps = StackScreenProps<
   RootStackParamList,
   'AdminCourses'
 >;
-export type AdminAssessmentsScreenProps = NativeStackScreenProps<
+export type AdminAssessmentsScreenProps = StackScreenProps<
   RootStackParamList,
   'AdminAssessments'
 >;
-export type AdminDataScreenProps = NativeStackScreenProps<RootStackParamList, 'AdminData'>;
+export type AdminDataScreenProps = StackScreenProps<RootStackParamList, 'AdminData'>;

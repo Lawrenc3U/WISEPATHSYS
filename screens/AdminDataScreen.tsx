@@ -64,7 +64,12 @@ const AdminDataScreen: React.FC<AdminDataScreenProps> = () => {
         </Text>
 
         {records.length === 0 ? (
-          <Text style={styles.empty}>No assessment data yet.</Text>
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyTitle}>No assessment data yet</Text>
+            <Text style={styles.empty}>
+              Records appear here after students complete quizzes.
+            </Text>
+          </View>
         ) : (
           records.map((record) => (
             <View
@@ -78,12 +83,17 @@ const AdminDataScreen: React.FC<AdminDataScreenProps> = () => {
                 {new Date(record.completedAt).toLocaleString()}
               </Text>
               <Text style={styles.meta}>
-                Best match: {record.bestCourseId || record.recommendedPaths[0]?.courses[0]?.id || '—'}
+                Best match:{' '}
+                {record.bestCourseId ||
+                  record.recommendedPaths[0]?.courses?.[0]?.id ||
+                  '—'}
               </Text>
-              <Text style={styles.strengths}>
-                Strengths: {record.strengths.slice(0, 2).join(', ')}
-                {record.strengths.length > 2 ? '…' : ''}
-              </Text>
+              {record.strengths?.length ? (
+                <Text style={styles.strengths}>
+                  Strengths: {record.strengths.slice(0, 2).join(', ')}
+                  {record.strengths.length > 2 ? '…' : ''}
+                </Text>
+              ) : null}
               <Text style={styles.rec}>
                 {record.recommendedPaths[0]?.title || 'No recommendation title'}
               </Text>
@@ -124,7 +134,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weights.bold,
   },
   banner: {
-    backgroundColor: '#FFF8E6',
+    backgroundColor: colors.highlightSoft,
     padding: spacing.md,
     borderRadius: borderRadius.xl,
     marginBottom: spacing.lg,
@@ -135,14 +145,32 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     color: colors.text,
   },
-  empty: { color: colors.textSecondary, textAlign: 'center', marginTop: spacing.xl },
+  emptyCard: {
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: borderRadius.xl,
+    padding: spacing.xl,
+    borderWidth: 1,
+    borderColor: colors.line,
+    alignItems: 'center',
+  },
+  emptyTitle: {
+    color: colors.text,
+    fontWeight: typography.weights.bold,
+    fontSize: typography.sizes.base,
+  },
+  empty: {
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+    lineHeight: 20,
+  },
   card: {
     backgroundColor: colors.surfaceElevated,
     borderRadius: borderRadius.xl,
     padding: spacing.lg,
     marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.line,
   },
   cardTitle: { fontWeight: typography.weights.bold, color: colors.text },
   meta: { fontSize: typography.sizes.sm, color: colors.textSecondary, marginTop: spacing.xs },

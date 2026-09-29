@@ -8,31 +8,29 @@ try {
 
 export default {
   expo: {
-    name: "WISEPATHSYS",
-    slug: "WISEPATHSYS",
+    name: "WisePath",
+    slug: "wisepath",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/icon.png",
+    icon: "./assets/wisepath.jpg",
+    userInterfaceStyle: "light",
     splash: {
-      image: "./assets/splash.png",
+      image: "./assets/wisepath.jpg",
       resizeMode: "contain",
-      backgroundColor: "#FFFFFF"
+      backgroundColor: "#FFFFFF",
     },
-    assetBundlePatterns: [
-      "**/*"
-    ],
+    assetBundlePatterns: ["**/*"],
     ios: {
-      supportsTabletMode: true,
-      supportsMultiwindow: false
+      supportsTablet: true,
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: "./assets/icon.png",
-        backgroundColor: "#FFFFFF"
-      }
+        foregroundImage: "./assets/wisepath.jpg",
+        backgroundColor: "#FFFFFF",
+      },
     },
     web: {
-      favicon: "./assets/favicon.png"
+      favicon: "./assets/wisepath.jpg",
     },
     plugins: [
       [
@@ -40,15 +38,23 @@ export default {
         {
           fonts: [
             "./assets/fonts/Inter-Regular.ttf",
-            "./assets/fonts/Inter-Bold.ttf"
-          ]
-        }
-      ]
+            "./assets/fonts/Inter-Bold.ttf",
+          ],
+        },
+      ],
+      [
+        "expo-image-picker",
+        {
+          photosPermission:
+            "Allow WisePath to access your photos for your profile picture.",
+        },
+      ],
+      "expo-splash-screen",
     ],
-    scheme: "wisepathsys",
+    scheme: "wisepath",
     experiments: {
       tsconfigPaths: true,
-      typedRoutes: false
-    }
-  }
+      typedRoutes: false,
+    },
+  },
 };
