@@ -1,199 +1,166 @@
 # WisePath
 
-**A SMART Course Recommendation with Progress Tracker for Incoming College Students**
+**A course recommendation and academic progress app for incoming college students.**
 
-WisePath is a mobile application built for senior high school and incoming college students who need help choosing a college program. It combines self-assessment, personalized course recommendations across multiple programs, academic progress tracking, and an admin overview for school staff.
+WisePath helps students explore degree programs, find programs that match their interests, and follow assessment-based progress. Administrators can manage the program catalog, questions, and student assessment records.
 
-Capstone project — College of Information and Communications Technology, STI West Negros University.
+Academic capstone project — College of Information and Communications Technology, STI West Negros University.
 
----
+## What WisePath does
 
-## Features
+### Student features
+- Create an account and complete a profile with education, interests, goals, and preferences.
+- Take a career assessment and see up to three ranked program matches.
+- Read a guidance summary and compare program details.
+- Browse curriculum, skills, career paths, duration, and tuition estimates when available.
+- Complete assessments for a specific program and view the fit result.
+- Track overall progress and completed, ongoing, and remaining subjects.
+- Review assessment history and retake assessments.
 
-### Student
-- **Account** — Register, sign in, and complete a learning profile
-- **Career assessment** — Multi-question quiz that ranks all programs with fit percentages
-- **Recommendations** — View top match and alternative programs
-- **Course explorer** — Program details, curriculum, careers, and skills
-- **Progress tracker** — Track completed, ongoing, and remaining subjects per program
-- **Profile** — View strengths, assessment history, retake quiz, or remove past assessments
+### Administrator features
+- View dashboard totals and recent activity.
+- Add, edit, or remove degree programs.
+- Manage career-assessment questions.
+- Review student assessment records.
 
-### Admin
-- **Overview dashboard** — Total students, active assessments, completion rate, total courses, recent activity
-- **Course management** — Add, edit, or remove degree programs
-- **Assessment management** — Manage quiz questions
-- **Records** — View student assessment data
+## Technology
 
----
+- **Programming language:** TypeScript 5.9
+- **Frontend:** React 19 and React Native 0.86, running with Expo SDK 57
+- **Backend:** Firebase services, using Firebase Authentication for accounts and roles
+- **Database:** Cloud Firestore, accessed through the Firebase JavaScript SDK 12
+- **Navigation:** React Navigation 7
+- **State management:** Zustand 4
+- **Local authentication persistence:** AsyncStorage
+- **UI and animation:** NativeWind, Lucide React Native, Expo Linear Gradient, and React Native Reanimated
 
-## Tech stack
+## Requirements
 
-| Layer | Technology |
-|--------|------------|
-| Mobile | [Expo](https://expo.dev) SDK 54, React Native 0.81, React 19 |
-| Navigation | React Navigation (native stack) |
-| State | Zustand |
-| Backend | Firebase Authentication, Cloud Firestore |
-| UI | Lucide icons, Expo Linear Gradient |
+- Node.js (current LTS recommended) and npm
+- Expo Go, or Android Studio / Xcode for an emulator or simulator
+- A Firebase project with Email/Password Authentication and Cloud Firestore enabled
 
----
+## Setup
 
-## Prerequisites
+1. **Install the packages**
 
-- [Node.js](https://nodejs.org/) 18+ (LTS recommended)
-- [npm](https://www.npmjs.com/) or yarn
-- [Expo Go](https://expo.dev/go) on your phone (for device testing), or Android Studio / Xcode for emulators
-- A [Firebase](https://console.firebase.google.com/) project with **Email/Password** auth and **Firestore** enabled
-- [Firebase CLI](https://firebase.google.com/docs/cli) (optional, for deploying security rules)
+	```bash
+	npm install
+	```
 
----
+2. **Set up Firebase configuration**
 
-## Getting started
+	Copy `.env.example` to `.env` and replace the example values with your Firebase web app configuration. Find those values in Firebase Console → Project settings → Your apps.
 
-### 1. Clone and install
+	```bash
+	copy .env.example .env
+	```
 
-```bash
-cd WISEPATHSYS
-npm install
-```
+	The Firebase app ID should start with `1:`. The measurement ID is optional.
 
-### 2. Environment variables
+3. **Enable Firebase services and deploy rules**
 
-Copy the example env file and fill in your Firebase web app config (Firebase Console → Project settings → Your apps):
+	- Enable **Email/Password** under Firebase Console → Authentication → Sign-in method.
+	- Create a Cloud Firestore database.
+	- Review [firestore.rules](./firestore.rules), then deploy the rules:
 
-```bash
-copy .env.example .env
-```
+	```bash
+	firebase login
+	firebase deploy --only firestore:rules --project YOUR_PROJECT_ID
+	```
 
-Required variables:
+4. **Run the app**
 
-```env
-EXPO_PUBLIC_FIREBASE_API_KEY=
-EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=
-EXPO_PUBLIC_FIREBASE_PROJECT_ID=
-EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=
-EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-EXPO_PUBLIC_FIREBASE_APP_ID=
-EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID=
-```
+	```bash
+	npm start
+	```
 
-Optional:
+	- Press `a` for Android or `i` for iOS, or scan the QR code using Expo Go.
+	- If a device cannot connect, run `npx expo start --tunnel`.
+	- Other available commands: `npm run android`, `npm run ios`, and `npm run web`.
 
-```env
-EXPO_PUBLIC_ADMIN_CODE=wisepath-admin-2026
-```
+## Admin account
 
-### 3. Firebase setup
+The admin code is used when **registering** an administrator. It is not requested at sign-in.
 
-1. **Authentication** → Sign-in method → enable **Email/Password**
-2. **Firestore** → Create database (production or test mode, then apply rules)
-3. Deploy security rules from this repo:
+- Choose the admin role on the registration screen.
+- Enter the default code: **`wisepath-admin-2026`**.
+- Finish registration with an email and password.
+- Sign in with that email and password to open the admin area.
 
-```bash
-firebase login
-firebase deploy --only firestore:rules --project YOUR_PROJECT_ID
-```
+To change the default code for a local build, set `EXPO_PUBLIC_ADMIN_CODE` in `.env`. The code is included in the client app, so it is not a secure production credential. Use Firebase Authentication and Firestore rules to protect access, and change the default before distributing the app.
 
-Rules live in [`firestore.rules`](./firestore.rules). They allow:
-- Students to read/write their own profile, assessments, and course progress
-- Public read for courses and quiz questions
-- Admins to manage content and view overview data
+## System flow
 
-### 4. Seed data (admin)
+### Student flow
 
-1. Register an account using the **admin registration code** (`EXPO_PUBLIC_ADMIN_CODE`, default `wisepath-admin-2026`)
-2. Open **Admin** → use **Courses** / **Questions** screens, or seed default programs and quiz items when collections are empty (on first admin load)
+1. **Create an account and profile.** Add information such as senior high school strand, interests, and learning goals.
+2. **Complete the career assessment.** WisePath scores the answers and combines them with profile information and affordability details when available.
+3. **View program matches.** The app ranks up to three programs and shows match percentages and program information.
+4. **Explore a program.** Review its curriculum, skills, career paths, duration, and available tuition estimate.
+5. **Complete program assessments.** Each program has its own assessments. A completed assessment is saved with a score; 75% or higher is marked as a fit for that program.
+6. **Advance and review progress.** The career assessment initializes or updates progress for the top match. Completing program assessments can contribute evenly up to 60% of that program's progress bar. Higher existing curriculum progress is preserved. The progress screen also shows subjects, year/semester, and graduation readiness.
+7. **Continue.** Return to recommendations, review assessment history, complete other program assessments, and check progress again.
 
-Default programs: **Hospitality Management**, **Information Technology**, **Criminal Justice**.
+### Administrator flow
 
-### 5. Run the app
+- Register with the admin role and code.
+- Sign in using the registered email and password.
+- Use the dashboard to reach course management, assessment management, and student records.
 
-```bash
-npm start
-```
+## Recommendations and AI
 
-Then:
-- Press `a` for Android emulator, `i` for iOS simulator, or scan the QR code with **Expo Go**
-- For connection issues on a physical device, try: `npx expo start --tunnel`
+WisePath currently creates program matches with a **weighted scoring system in the app**, not a local or cloud AI model. It scores each program using:
 
-Other scripts:
+- **Career assessment answers:** Each answer adds points to one or more program areas according to the question's scoring weights.
+- **Student profile:** Career interests, senior high school strand, and learning goals add points to related program areas. Selected skill level and learning style can also add points.
+- **Affordability, when information is available:** The app compares the student's selected parental-income range with a program's estimated tuition and adds an affordability score. If either value is missing or the student prefers not to share income, this factor is not used.
 
-```bash
-npm run android
-npm run ios
-npm run web
-```
+The app combines these points, ranks the programs, and displays the top three. Match percentages are derived from the scores; they are not probabilities of success or guarantees that a student will fit a program.
 
----
+The guidance summary on the Recommendations screen is a **simulated message generated locally** from the profile and highest-scoring program. It does not call an LLM.
 
-## User flows
+**OpenAI integration point:** [services/openaiService.ts](./services/openaiService.ts) contains a separate helper that can send quiz-answer data to a backend at `POST /api/recommendations`. The backend must be hosted separately and would be responsible for calling OpenAI and returning recommendations. The current Recommendations screen does not call this helper, so WisePath does not currently send recommendation data to OpenAI. Setting `EXPO_PUBLIC_OPENAI_API_KEY` alone does not turn on OpenAI recommendations; never put a real OpenAI secret key in the Expo app. Store and use it only on the backend.
 
-### Student
-1. **Register** → **Profile setup** → **Dashboard**
-2. Take **Assessment** → view **Recommendations** (all programs ranked)
-3. Open a **Course** → **Start Course** → **Progress** screen
-4. **Profile** — review history, retake assessment, or remove records
+## Firestore data
 
-### Admin
-1. Register with admin code → **Admin Overview**
-2. Use **Courses**, **Questions**, or **Records** from the manage row at the bottom
+- `users` — account role and student profile
+- `courses` — degree programs and curriculum
+- `quizQuestions` — career-assessment questions and scoring weights
+- `assessments` — career-assessment results and recommendations
+- `courseProgress` — each student's progress in a program
+- `programAssessmentCompletions` — completed program assessments and fit scores
 
----
+The app also includes local default program and assessment data. Firebase rules control access to Firestore data.
 
-## Project structure
+## Main project folders and files
 
-```
-WISEPATHSYS/
-├── App.tsx                 # App entry
-├── navigation/             # Root navigator, route types
-├── screens/                # UI screens (auth, student, admin)
-├── components/             # Reusable UI (buttons, cards, etc.)
-├── services/               # Firebase, auth, quiz, progress, admin
-├── stores/                 # Zustand state (auth, user, courses)
-├── utils/                  # Types, theme, constants, sample data
-├── firestore.rules         # Firestore security rules
-├── firebase.json           # Firebase project config
-├── metro.config.js         # Metro bundler (Firebase compatibility)
-└── .env.example            # Environment template
-```
-
----
-
-## Firestore collections
-
-| Collection | Purpose |
-|------------|---------|
-| `users` | Account role, profile, `profileComplete` |
-| `courses` | Degree programs (title, curriculum, careers, skills) |
-| `quizQuestions` | Assessment questions and scoring weights |
-| `assessments` | Student quiz results and recommendations |
-| `courseProgress` | Per-student, per-program academic progress |
-
-Progress document IDs: `{userId}__{courseId}`.
-
----
+- `App.tsx` — app entry point
+- `navigation/` — root navigation and route types
+- `screens/` — student, authentication, and admin screens
+- `components/` — reusable interface components
+- `services/` — Firebase, authentication, assessments, recommendations, and progress
+- `stores/` — Zustand application state
+- `utils/` — types, theme, constants, and assessment data
+- `firestore.rules` — Firestore security rules
+- `firebase.json` — Firebase CLI configuration
+- `package.json` — dependencies and Expo commands
 
 ## Troubleshooting
 
-| Issue | What to try |
-|-------|-------------|
-| `Permission denied` on Firestore | Deploy `firestore.rules` and sign out/in |
-| Firebase Auth configuration error | Check `.env` values, especially `APP_ID` format (`1:...`) |
-| Auth not registered (Expo) | Ensure `metro.config.js` has `unstable_enablePackageExports: false` |
-| Expo Go won’t connect | Same Wi‑Fi, disable VPN, or use `--tunnel` |
-| Assessment delete fails | Rules must allow student `delete` on own `assessments` |
+- **Firestore says `Permission denied`:** Deploy and review `firestore.rules`. Confirm that the signed-in user has the expected role and owns the requested data.
+- **Firebase configuration error:** Check the `.env` values, especially that `EXPO_PUBLIC_FIREBASE_APP_ID` starts with `1:`, then restart Expo.
+- **Sign-in or registration fails:** Confirm Email/Password is enabled in Firebase Authentication.
+- **Expo Go cannot connect:** Check phone/computer connectivity, disable VPN if needed, or use `npx expo start --tunnel`.
+- **Progress is missing:** Sign in and complete the career assessment or a program assessment. Confirm Firestore rules allow access to the user's records.
 
----
-
-## Team
+## Project team
 
 - De Leon, Sweet Angelu P.
 - Esguerra, Shanela C.
 - Galilea, Shan Mark G.
 - Jorolan, Jeia A.
-- Legaspi, Jezreel G.
-
----
+- Clauor, Josh Matthew E.
 
 ## License
 

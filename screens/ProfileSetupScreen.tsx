@@ -44,7 +44,7 @@ import {
 
 const LEARNING_STYLES = ['Visual', 'Hands-on', 'Reading', 'Mixed'];
 const SKILL_LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
-const EXPERIENCE = ['0-1 year', '1-3 years', '3+ years'];
+const EXPERIENCE = ['No Experience', '1-3 years', '3+ years'];
 
 const ChipRow = ({
   options,
