@@ -9,6 +9,15 @@ __v0_jsx-dev-runtime.ts
 # Environment variables
 .env*.local
 
+# Expo / Android build artifacts
+.expo/
+.expo-shared/
+.gradle/
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+
 # Common ignores
 node_modules
 .next/

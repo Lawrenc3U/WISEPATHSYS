@@ -1,47 +1,49 @@
 // Optional dotenv loading - Expo has built-in .env support
+
 try {
   require("dotenv").config();
 } catch (error) {
-  // dotenv not installed, but that's okay - Expo will load .env automatically
-  console.log("Note: dotenv not installed, using Expo's built-in .env support");
+  console.log(
+    "Note: dotenv not installed, using Expo's built-in .env support"
+  );
 }
 
 export default {
   expo: {
-    name: "WisePath",
+    name: "Wisepath",
     slug: "wisepath",
     version: "1.0.0",
+
     orientation: "portrait",
-    icon: "./assets/wisepath.jpg",
+    icon: "./assets/icon.png",
     userInterfaceStyle: "light",
+
     splash: {
-      image: "./assets/wisepath.jpg",
+      image: "./assets/splash.png",
       resizeMode: "contain",
       backgroundColor: "#FFFFFF",
     },
-    assetBundlePatterns: ["**/*"],
-    ios: {
-      supportsTablet: true,
-    },
+
     android: {
+      package: "com.wisepathsys.app",
       adaptiveIcon: {
-        foregroundImage: "./assets/wisepath.jpg",
+        foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#FFFFFF",
       },
     },
-    web: {
-      favicon: "./assets/wisepath.jpg",
+
+    ios: {
+      supportsTablet: true,
     },
+
+    assetBundlePatterns: ["**/*"],
+
+    web: {
+      favicon: "./assets/favicon.png",
+    },
+
     plugins: [
-      [
-        "expo-font",
-        {
-          fonts: [
-            "./assets/fonts/Inter-Regular.ttf",
-            "./assets/fonts/Inter-Bold.ttf",
-          ],
-        },
-      ],
+      "expo-font",
       [
         "expo-image-picker",
         {
@@ -51,7 +53,15 @@ export default {
       ],
       "expo-splash-screen",
     ],
+
+    extra: {
+      eas: {
+        projectId: "a20168cf-6ca5-4060-a29c-a10fb6421ce6",
+      },
+    },
+
     scheme: "wisepath",
+
     experiments: {
       tsconfigPaths: true,
       typedRoutes: false,
