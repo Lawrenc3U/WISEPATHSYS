@@ -1,4 +1,5 @@
-# WisePath
+
+
 
 **A course recommendation and academic progress app for incoming college students.**
 
@@ -84,7 +85,8 @@ Academic capstone project — College of Information and Communications Technolo
 The admin code is used when **registering** an administrator. It is not requested at sign-in.
 
 - Choose the admin role on the registration screen.
-- Enter the default code: **`wisepath-admin-2026`**.
+- Enter the default code: **
+-2026`**.
 - Finish registration with an email and password.
 - Sign in with that email and password to open the admin area.
 
